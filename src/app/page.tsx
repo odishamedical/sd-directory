@@ -5,13 +5,14 @@ import * as Icons from "lucide-react";
 import MapPreview from "../components/MapPreview";
 import ClaimModal from "../components/ClaimModal";
 import ListingDetailModal from "../components/ListingDetailModal";
-import { INITIAL_LISTINGS, Listing } from "../data/listings";
+import { Listing } from "../data/listings";
 import EcosystemSwitcher from "../components/EcosystemSwitcher";
+import { db, collection, getDocs, query, orderBy } from "../lib/firebase";
 
 export default function DirectoryHome() {
   // Listings State
-  const [listings, setListings] = useState<Listing[]>(INITIAL_LISTINGS);
-  const [filteredListings, setFilteredListings] = useState<Listing[]>(INITIAL_LISTINGS);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   
   // Search & Categories Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,9 +34,42 @@ export default function DirectoryHome() {
   useEffect(() => {
     const claims = JSON.parse(localStorage.getItem("sd_listing_claims") || "[]");
     const claimedIds = claims.map((c: any) => c.listingId);
-    
-    // Also mark mock listings as claimed if in local storage
     setClaimedListingIds(claimedIds);
+    
+    // Fetch Live Data from Firestore
+    const fetchListings = async () => {
+      try {
+        const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        const liveListings: Listing[] = [];
+        if (querySnapshot.empty) {
+          console.log("Firestore is empty, seeding initial listings...");
+          const { INITIAL_LISTINGS } = await import("../data/listings");
+          const { addDoc, serverTimestamp } = await import("../lib/firebase");
+          
+          for (const listing of INITIAL_LISTINGS) {
+            // Remove the hardcoded ID so Firestore generates a new one, but keep the data
+            const { id, ...dataToSave } = listing;
+            await addDoc(collection(db, "listings"), {
+              ...dataToSave,
+              createdAt: serverTimestamp()
+            });
+            liveListings.push(listing);
+          }
+        } else {
+          querySnapshot.forEach((doc) => {
+            liveListings.push({ id: doc.id, ...doc.data() } as Listing);
+          });
+        }
+        
+        setListings(liveListings);
+        setFilteredListings(liveListings);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    };
+    
+    fetchListings();
   }, []);
 
   // Filter listings based on Search & Tabs & Sidebar selection
