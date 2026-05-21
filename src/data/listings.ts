@@ -117,7 +117,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     phone: "+91 674 669 8800",
     website: "https://sd-digital.vercel.app",
     features: ["Enterprise Next.js SaaS", "Railway Cloud setups", "Medplum EHR Customization", "D2C Payment integration"],
-    external_url: "https://sd-it-hub.vercel.app"
+    external_url: "https://sd-it-hub-w3sk.vercel.app"
   },
   {
     id: "lst-mayurbhanj-jewels",

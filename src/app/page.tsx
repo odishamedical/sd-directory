@@ -185,7 +185,7 @@ export default function DirectoryHome() {
               <Icons.HeartPulse className="w-3.5 h-3.5" />
               <span>DehaPa Health</span>
             </a>
-            <a href="https://sd-it-hub.vercel.app" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg hover:text-[#e5c158] transition-colors flex items-center gap-1">
+            <a href="https://sd-it-hub-w3sk.vercel.app" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg hover:text-[#e5c158] transition-colors flex items-center gap-1">
               <Icons.Terminal className="w-3.5 h-3.5" />
               <span>IT Hub</span>
             </a>
