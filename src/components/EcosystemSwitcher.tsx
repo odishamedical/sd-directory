@@ -10,6 +10,26 @@ export default function EcosystemSwitcher() {
 
   const checkAuth = () => {
     if (typeof window !== "undefined") {
+      // 1. Check for incoming SSO tokens in the URL
+      const params = new URLSearchParams(window.location.search);
+      const ssoEmail = params.get("sso_email");
+      const ssoName = params.get("sso_name");
+      const ssoAvatar = params.get("sso_avatar");
+      const ssoRole = params.get("sso_role");
+
+      if (ssoEmail) {
+        // Save new SSO session to this domain's localStorage
+        localStorage.setItem("sd_current_user_email", ssoEmail);
+        if (ssoName) localStorage.setItem("sd_current_user_name", ssoName);
+        if (ssoAvatar) localStorage.setItem("sd_current_user_avatar", ssoAvatar);
+        if (ssoRole) localStorage.setItem("sd_current_user_role", ssoRole);
+        
+        // Clean up the URL to hide the tokens (optional but looks professional)
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+
+      // 2. Load from localStorage
       setUserEmail(localStorage.getItem("sd_current_user_email"));
       setUserName(localStorage.getItem("sd_current_user_name"));
       setUserAvatar(localStorage.getItem("sd_current_user_avatar"));
