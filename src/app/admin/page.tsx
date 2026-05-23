@@ -37,9 +37,7 @@ export default function AdminDashboard() {
       setIsAuthorized(true);
     } else {
       console.warn("Unauthorized role detected:", role);
-      // Temporarily bypassing strict redirect so you can test the Importer!
-      setIsAuthorized(true);
-      // router.push("/");
+      router.push("/");
     }
   }, [router]);
 
