@@ -146,6 +146,7 @@ export default function EcosystemSwitcher() {
   const getProjectUrl = (baseUrl: string) => {
     if (!userEmail) return baseUrl;
     const url = new URL(baseUrl);
+    url.searchParams.set("token", "sso_jump");
     url.searchParams.set("sso_email", userEmail);
     if (userName) url.searchParams.set("sso_name", userName);
     if (userAvatar) url.searchParams.set("sso_avatar", userAvatar);
