@@ -84,8 +84,8 @@ export default function AdminDashboard() {
     setIsLoadingData(true);
     try {
       const snapshot = await getDocs(collection(db, "claims"));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setClaims(data.sort((a, b) => b.submittedAt?.toMillis?.() - a.submittedAt?.toMillis?.()));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any);
+      setClaims(data.sort((a: any, b: any) => (b.submittedAt?.toMillis?.() || 0) - (a.submittedAt?.toMillis?.() || 0)));
     } catch (err) {
       console.error("Failed to fetch claims:", err);
     }
