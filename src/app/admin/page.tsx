@@ -31,11 +31,12 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    // Check if user is super_admin
+    // Check if user is an admin or super_admin
     const role = localStorage.getItem("sd_current_user_role");
-    if (role === "super_admin") {
+    if (role === "super_admin" || role === "admin") {
       setIsAuthorized(true);
     } else {
+      console.warn("Unauthorized role detected:", role);
       router.push("/");
     }
   }, [router]);
