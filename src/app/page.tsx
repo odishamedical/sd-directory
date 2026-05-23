@@ -29,6 +29,7 @@ export default function DirectoryHome() {
   const [activeDetailListing, setActiveDetailListing] = useState<Listing | null>(null);
   const [activeClaimListing, setActiveClaimListing] = useState<Listing | null>(null);
   const [ssoMessageVisible, setSsoMessageVisible] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Load claimed listings from local storage on load
   useEffect(() => {
@@ -254,7 +255,7 @@ export default function DirectoryHome() {
               placeholder="Search stores, jewelry, handlooms, doctors across Odisha..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-4 pl-12 pr-28 bg-slate-900/60 border border-[rgba(229,193,88,0.2)] rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-[#e5c158] focus:ring-1 focus:ring-[#e5c158] backdrop-blur-md transition-all shadow-xl"
+              className="w-full py-4 pl-12 pr-28 bg-slate-900/60 border border-[rgba(229,193,88,0.3)] rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-[#e5c158] focus:ring-1 focus:ring-[#e5c158] backdrop-blur-md transition-all shadow-[0_0_20px_rgba(229,193,88,0.15)] hover:shadow-[0_0_30px_rgba(229,193,88,0.25)]"
             />
             <div className="absolute inset-y-2 right-2 flex items-center">
               {searchQuery && (
@@ -291,9 +292,24 @@ export default function DirectoryHome() {
       <section className="relative max-w-[1400px] mx-auto w-full px-4 sm:px-6 pb-24 z-10 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Sidebar Filter Section */}
-          <aside className="lg:col-span-3 space-y-6">
+          {/* Mobile Filter Overlay */}
+          {isMobileFilterOpen && (
+            <div 
+              className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+              onClick={() => setIsMobileFilterOpen(false)}
+            />
+          )}
+
+          {/* Left Sidebar Filter Section / Mobile Drawer */}
+          <aside className={`fixed inset-y-0 left-0 z-50 w-4/5 max-w-sm bg-[#060c18] border-r border-slate-800 p-6 overflow-y-auto transform transition-transform duration-300 lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:bg-transparent lg:border-none lg:p-0 lg:overflow-visible lg:transform-none lg:col-span-3 space-y-6 shadow-2xl lg:shadow-none ${isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             
+            <div className="flex justify-between items-center lg:hidden mb-4 pb-4 border-b border-slate-800">
+              <span className="text-sm font-bold text-white uppercase tracking-wider">Filters</span>
+              <button onClick={() => setIsMobileFilterOpen(false)} className="text-slate-400 hover:text-white">
+                <Icons.X className="w-6 h-6" />
+              </button>
+            </div>
+
             {/* Filter Container Card */}
             <div className="glass-panel p-5 rounded-2xl space-y-6">
               <div className="flex justify-between items-center pb-4 border-b border-slate-800">
@@ -430,7 +446,7 @@ export default function DirectoryHome() {
                     <div 
                       key={lst.id}
                       onClick={() => setActiveDetailListing(lst)}
-                      className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group"
+                      className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
                     >
                       
                       {/* Photo Header */}
@@ -581,6 +597,15 @@ export default function DirectoryHome() {
           onSuccess={handleClaimSuccess}
         />
       )}
+
+      {/* Floating Mobile Filter Button */}
+      <button 
+        onClick={() => setIsMobileFilterOpen(true)}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 lg:hidden flex items-center gap-2 px-6 py-3 bg-gold-gradient text-slate-950 font-black rounded-full shadow-[0_8px_30px_rgba(229,193,88,0.4)] hover:scale-105 transition-transform"
+      >
+        <Icons.SlidersHorizontal className="w-4 h-4" />
+        FILTERS
+      </button>
 
     </div>
   );
