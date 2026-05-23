@@ -31,7 +31,20 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    // Check if user is an admin or super_admin
+    // 1. If arriving directly from Launcher, parse SSO tokens FIRST
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const ssoRole = params.get("sso_role");
+      if (ssoRole) {
+        localStorage.setItem("sd_current_user_role", ssoRole);
+        
+        // Clean URL optional
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+
+    // 2. Check if user is an admin or super_admin
     const role = localStorage.getItem("sd_current_user_role");
     if (role === "super_admin" || role === "admin") {
       setIsAuthorized(true);
