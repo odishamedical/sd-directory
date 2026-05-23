@@ -10,8 +10,15 @@ export default function EcosystemSwitcher() {
 
   const checkAuth = () => {
     if (typeof window !== "undefined") {
-      // 1. Check for incoming SSO tokens in the URL
       const params = new URLSearchParams(window.location.search);
+      
+      // 0. Check for Viral Referral Code
+      const refCode = params.get("ref");
+      if (refCode) {
+        localStorage.setItem("sd_pending_referral", refCode);
+      }
+
+      // 1. Check for incoming SSO tokens in the URL
       const ssoEmail = params.get("sso_email");
       const ssoName = params.get("sso_name");
       const ssoAvatar = params.get("sso_avatar");
@@ -130,6 +137,25 @@ export default function EcosystemSwitcher() {
     }
   ];
 
+  const getAuthCenterUrl = () => {
+    if (typeof window === "undefined") return "https://sd-auth-center.vercel.app";
+    const refCode = localStorage.getItem("sd_pending_referral");
+    return refCode ? `https://sd-auth-center.vercel.app?ref=${refCode}` : "https://sd-auth-center.vercel.app";
+  };
+
+  const getProjectUrl = (baseUrl: string) => {
+    if (!userEmail) return baseUrl;
+    const url = new URL(baseUrl);
+    url.searchParams.set("sso_email", userEmail);
+    if (userName) url.searchParams.set("sso_name", userName);
+    if (userAvatar) url.searchParams.set("sso_avatar", userAvatar);
+    if (typeof window !== "undefined") {
+      const role = localStorage.getItem("sd_current_user_role");
+      if (role) url.searchParams.set("sso_role", role);
+    }
+    return url.toString();
+  };
+
   return (
     <div className="relative inline-block text-left z-50 font-sans">
       <button
@@ -171,7 +197,7 @@ export default function EcosystemSwitcher() {
               {projects.map((project) => (
                 <a
                   key={project.name}
-                  href={project.url}
+                  href={getProjectUrl(project.url)}
                   onClick={() => setIsOpen(false)}
                   className="flex items-start gap-3 p-3 md:p-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition-all group"
                 >
@@ -214,7 +240,7 @@ export default function EcosystemSwitcher() {
                 </div>
               ) : (
                 <a
-                  href="https://sd-auth-center.vercel.app"
+                  href={getAuthCenterUrl()}
                   className="w-full py-3 md:py-2 bg-gradient-to-r from-[#996515] to-[#C5A059] text-center text-[#0A1021] font-bold text-[11px] md:text-[10px] uppercase tracking-wider rounded-xl md:rounded-lg shadow hover:brightness-110 transition-all flex items-center justify-center gap-1.5"
                 >
                   <svg className="w-4 h-4 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
