@@ -176,16 +176,15 @@ export default function AdminDashboard() {
   const handleImportAll = async () => {
     setIsImporting(true); setErrorMsg(""); setSuccessMsg("");
     try {
-      let imported = 0;
-      for (const place of searchResults) {
-        await addDoc(collection(db, "listings"), {
+      const promises = searchResults.map(place => 
+        addDoc(collection(db, "listings"), {
           ...place,
           features: ["Auto-Imported", "Google Places"],
           createdAt: serverTimestamp()
-        });
-        imported++;
-      }
-      setSuccessMsg(`Successfully imported ${imported} listings into the directory!`);
+        })
+      );
+      await Promise.all(promises);
+      setSuccessMsg(`Successfully imported ${searchResults.length} listings into the directory!`);
       setSearchResults([]); setSearchQuery("");
     } catch (err: any) {
       setErrorMsg("Failed to import some listings. Check console.");
