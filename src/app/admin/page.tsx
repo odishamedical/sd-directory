@@ -11,6 +11,12 @@ export default function AdminDashboard() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Importer State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     category: "jewelry",
@@ -81,6 +87,54 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSearchPlaces = async () => {
+    if (!searchQuery) return;
+    setIsSearching(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    
+    try {
+      const res = await fetch(`/api/places?query=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || "Failed to search places");
+      
+      setSearchResults(data.results);
+      if (data.results.length === 0) setErrorMsg("No results found on Google Maps.");
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleImportAll = async () => {
+    setIsImporting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      let imported = 0;
+      for (const place of searchResults) {
+        await addDoc(collection(db, "listings"), {
+          ...place,
+          features: ["Auto-Imported", "Google Places"],
+          createdAt: serverTimestamp()
+        });
+        imported++;
+      }
+      setSuccessMsg(`Successfully imported ${imported} listings into the directory!`);
+      setSearchResults([]);
+      setSearchQuery("");
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg("Failed to import some listings. Check console.");
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   if (!isAuthorized) return null; // or a loading spinner
 
   return (
@@ -101,6 +155,60 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* GOOGLE PLACES AUTO-IMPORTER */}
+        <div className="bg-slate-900/50 border border-[#e5c158]/50 p-8 rounded-2xl mb-8">
+          <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+            <span className="text-[#e5c158]">⚡</span> Google Places Auto-Importer
+          </h2>
+          <p className="text-sm text-slate-400 mb-6">Search for real businesses to automatically seed the directory.</p>
+          
+          <div className="flex gap-4 mb-6">
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g., Doctors in Cuttack" 
+              className="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none"
+              onKeyDown={(e) => e.key === "Enter" && handleSearchPlaces()}
+            />
+            <button 
+              onClick={handleSearchPlaces}
+              disabled={isSearching || !searchQuery}
+              className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-colors disabled:opacity-50"
+            >
+              {isSearching ? "Searching..." : "Search Places"}
+            </button>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-[#e5c158]">Found {searchResults.length} Results</h3>
+              <div className="max-h-64 overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                {searchResults.map((res, idx) => (
+                  <div key={idx} className="flex justify-between items-center pb-3 border-b border-slate-800/50 last:border-0 last:pb-0">
+                    <div>
+                      <div className="font-bold text-white text-sm">{res.name}</div>
+                      <div className="text-xs text-slate-500">{res.address}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-[#e5c158] font-bold">{res.rating} ⭐ ({res.reviews_count})</div>
+                      <div className="text-[10px] text-slate-400 uppercase">{res.category}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={handleImportAll}
+                disabled={isImporting}
+                className="w-full py-3 mt-2 rounded-xl bg-gold-gradient text-slate-950 font-black uppercase tracking-widest hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isImporting ? "Injecting into Firebase..." : `Import All ${searchResults.length} Listings Now`}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <h2 className="text-xl font-bold text-white mb-4">Manual Entry Form</h2>
         <form onSubmit={handleSubmit} className="bg-slate-900/50 border border-slate-800 p-8 rounded-2xl space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
