@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import * as Icons from "lucide-react";
+import { db, addDoc, collection, serverTimestamp } from "../lib/firebase";
 
 interface ClaimModalProps {
   listing: {
@@ -52,17 +53,12 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
     setStep(step - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Mock submission delay
-    setTimeout(() => {
-      setIsSubmitting(false);
-      
-      // Save locally to simulate backend store
-      const claims = JSON.parse(localStorage.getItem("sd_listing_claims") || "[]");
-      claims.push({
+    try {
+      await addDoc(collection(db, "claims"), {
         listingId: listing.id,
         listingName: listing.name,
         category: listing.category,
@@ -73,15 +69,19 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
         role,
         docType,
         docNumber,
-        submittedAt: new Date().toISOString(),
+        submittedAt: serverTimestamp(),
         status: "Pending Verification"
       });
-      localStorage.setItem("sd_listing_claims", JSON.stringify(claims));
 
       // Trigger success callback
       onSuccess(listing.id);
       setStep(4);
-    }, 1500);
+    } catch (err) {
+      console.error("Failed to submit claim:", err);
+      alert("Error submitting claim. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getCategoryLabel = (cat: string) => {
