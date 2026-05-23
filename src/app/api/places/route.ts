@@ -14,17 +14,32 @@ export async function GET(request: Request) {
   }
 
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`;
-    const response = await fetch(url);
+    const url = `https://places.googleapis.com/v1/places:searchText`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.photos"
+      },
+      body: JSON.stringify({
+        textQuery: query
+      })
+    });
+    
     const data = await response.json();
 
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+    if (data.error) {
       console.error("Google API Error:", data);
-      return NextResponse.json({ error: data.error_message || "Failed to fetch from Google" }, { status: 500 });
+      return NextResponse.json({ error: data.error.message || "Failed to fetch from Google" }, { status: 500 });
+    }
+
+    if (!data.places || data.places.length === 0) {
+      return NextResponse.json({ results: [] });
     }
 
     // Format the results to match our app's needs slightly
-    const results = data.results.map((place: any) => {
+    const results = data.places.map((place: any) => {
       // Determine a rough category based on query or types
       let category = "retail";
       const q = query.toLowerCase();
@@ -37,22 +52,25 @@ export async function GET(request: Request) {
       // Construct photo URL if available
       let imageUrl = "";
       if (place.photos && place.photos.length > 0) {
-        imageUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${place.photos[0].photo_reference}&key=${apiKey}`;
+        imageUrl = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxHeightPx=800&maxWidthPx=800&key=${apiKey}`;
       } else {
         // Fallback placeholder
         imageUrl = "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800"; 
       }
 
+      const name = place.displayName?.text || "Unknown Business";
+      const address = place.formattedAddress || "Odisha, India";
+
       // Generate a smart description
       const ratingText = place.rating ? ` with an excellent ${place.rating}-star rating` : "";
-      const description = `${place.name} is a leading facility located at ${place.formatted_address}, Odisha. Known for providing top-tier services to the local community${ratingText}.`;
+      const description = `${name} is a leading facility located at ${address}. Known for providing top-tier services to the local community${ratingText}.`;
 
       return {
-        id: place.place_id,
-        name: place.name,
-        address: place.formatted_address,
+        id: place.id,
+        name: name,
+        address: address,
         rating: place.rating || 0,
-        reviews_count: place.user_ratings_total || 0,
+        reviews_count: place.userRatingCount || 0,
         image: imageUrl,
         category: category,
         description: description,
