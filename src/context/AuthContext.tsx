@@ -27,6 +27,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        if (currentUser.email?.includes("shyamdash") || currentUser.email?.includes("odishamedical") || currentUser.email?.includes("admin")) {
+          localStorage.setItem("sd_current_user_role", "super_admin");
+        } else if (!localStorage.getItem("sd_current_user_role")) {
+          localStorage.setItem("sd_current_user_role", "user");
+        }
+      }
       setLoading(false);
     });
     return () => unsubscribe();

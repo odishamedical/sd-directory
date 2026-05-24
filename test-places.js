@@ -18,7 +18,7 @@ async function test() {
       "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.internationalPhoneNumber,places.nationalPhoneNumber"
     },
     body: JSON.stringify({
-      textQuery: "Kuchinda Sambalpuri Bastralaya"
+      textQuery: "Shree Mahavir Bastralaya"
     })
   });
   

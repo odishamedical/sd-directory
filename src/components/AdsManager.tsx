@@ -43,6 +43,11 @@ export default function AdsManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image is too large. Please select an image under 5MB.");
+      return;
+    }
+
     setUploading(true);
     
     // Use FileReader and Canvas to compress and convert to Base64
@@ -67,8 +72,17 @@ export default function AdsManager() {
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, width, height);
         
-        // Compress to JPEG with 0.7 quality
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        // Compress to JPEG with 0.6 quality
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        
+        // Ensure base64 string isn't too large for Firestore (max 1MB per document, we keep it under ~300KB)
+        const sizeInBytes = Math.round((dataUrl.length * 3) / 4);
+        if (sizeInBytes > 300 * 1024) {
+          alert("Image is still too large after compression. Please use a smaller or less complex image.");
+          setUploading(false);
+          return;
+        }
+
         setImageUrl(dataUrl);
         setUploading(false);
       };
@@ -152,6 +166,18 @@ export default function AdsManager() {
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <Icons.PlusCircle className="w-5 h-5 text-[#e5c158]" /> Create New Ad Campaign
         </h3>
+        
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6 text-sm text-blue-200">
+          <p className="font-bold flex items-center gap-2 mb-1">
+            <Icons.Info className="w-4 h-4" /> Ad Banner Guidelines
+          </p>
+          <ul className="list-disc list-inside space-y-1 ml-1 opacity-80 text-xs">
+            <li><strong>Search Results Grid:</strong> Recommended 800x450px (16:9 ratio)</li>
+            <li><strong>Listing Page Sidebar:</strong> Recommended 300x600px or 300x250px</li>
+            <li><strong>File Limit:</strong> Maximum 5MB per upload. Images are automatically compressed.</li>
+          </ul>
+        </div>
+
         <form onSubmit={handleAddAd} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Image URL or Upload</label>

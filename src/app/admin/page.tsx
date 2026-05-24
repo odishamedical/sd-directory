@@ -66,9 +66,18 @@ export default function AdminDashboard() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const ssoRole = params.get("sso_role");
-      if (ssoRole) {
-        localStorage.setItem("sd_current_user_role", ssoRole);
-        
+      const ssoEmail = params.get("sso_email");
+      const ssoName = params.get("sso_name");
+      const ssoAvatar = params.get("sso_avatar");
+
+      let hasSsoParams = false;
+
+      if (ssoRole) { localStorage.setItem("sd_current_user_role", ssoRole); hasSsoParams = true; }
+      if (ssoEmail) { localStorage.setItem("sd_current_user_email", ssoEmail); hasSsoParams = true; }
+      if (ssoName) { localStorage.setItem("sd_current_user_name", ssoName); hasSsoParams = true; }
+      if (ssoAvatar) { localStorage.setItem("sd_current_user_avatar", ssoAvatar); hasSsoParams = true; }
+      
+      if (hasSsoParams) {
         // Clean URL optional
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
