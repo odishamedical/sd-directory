@@ -176,18 +176,37 @@ export default function AdminDashboard() {
   const handleImportAll = async () => {
     setIsImporting(true); setErrorMsg(""); setSuccessMsg("");
     try {
-      const promises = searchResults.map(place => 
-        addDoc(collection(db, "listings"), {
-          ...place,
-          features: ["Auto-Imported", "Google Places"],
-          createdAt: serverTimestamp()
-        })
+      // Clean undefined values just in case
+      const cleanData = searchResults.map(place => ({
+        id: place.id || "unknown",
+        name: place.name || "Unknown",
+        address: place.address || "",
+        rating: place.rating || 0,
+        reviews_count: place.reviews_count || 0,
+        image: place.image || "",
+        category: place.category || "retail",
+        description: place.description || "",
+        distance: place.distance || "",
+        is_verified: true,
+        is_claimed: false,
+        features: ["Auto-Imported", "Google Places"],
+        createdAt: serverTimestamp()
+      }));
+
+      const promises = cleanData.map(data => addDoc(collection(db, "listings"), data));
+      
+      // Add a 10-second timeout to prevent infinite hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Firebase connection timed out after 10 seconds. Check your Firestore Security Rules.")), 10000)
       );
-      await Promise.all(promises);
+
+      await Promise.race([Promise.all(promises), timeoutPromise]);
+      
       setSuccessMsg(`Successfully imported ${searchResults.length} listings into the directory!`);
       setSearchResults([]); setSearchQuery("");
     } catch (err: any) {
-      setErrorMsg("Failed to import some listings. Check console.");
+      console.error("IMPORT ERROR:", err);
+      setErrorMsg(err.message || "Failed to import some listings. Check console.");
     } finally {
       setIsImporting(false);
     }
