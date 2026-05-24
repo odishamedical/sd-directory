@@ -31,12 +31,26 @@ export default function ListingPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   
   const [showClaimModal, setShowClaimModal] = useState(false);
+  const [sidebarAds, setSidebarAds] = useState<any[]>([]);
 
   useEffect(() => {
     if (!listingId) return;
     fetchListing();
     fetchReviews();
+    fetchAds();
   }, [listingId]);
+
+  const fetchAds = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "ads"));
+      const activeSidebarAds = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() } as any))
+        .filter(ad => ad.active && ad.position === "listing_sidebar");
+      setSidebarAds(activeSidebarAds);
+    } catch (err) {
+      console.error("Failed to load ads", err);
+    }
+  };
 
   const fetchListing = async () => {
     try {
@@ -350,6 +364,22 @@ export default function ListingPage() {
                 Live Map
               </div>
             </div>
+
+            {/* Sidebar Ads */}
+            {sidebarAds.length > 0 && (
+              <div className="space-y-4">
+                {sidebarAds.map(ad => (
+                  <div key={ad.id} className="bg-[#090F1D] border border-[#1e293b] rounded-2xl overflow-hidden relative group shadow-lg">
+                    <a href={ad.linkUrl} target="_blank" rel="noopener noreferrer">
+                      <img src={ad.imageUrl} alt="Advertisement" className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-bold text-[#e5c158] uppercase tracking-widest border border-[#e5c158]/20">
+                        Sponsored
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Share & Promote */}
             <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-6">

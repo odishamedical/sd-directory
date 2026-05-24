@@ -6,6 +6,7 @@ import { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimes
 import * as Icons from "lucide-react";
 import TaxonomyManager from "../../components/TaxonomyManager";
 import EditListingModal from "../../components/EditListingModal";
+import AdsManager from "../../components/AdsManager";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -398,6 +399,13 @@ export default function AdminDashboard() {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === "taxonomy" ? "bg-[#e5c158]/10 text-[#e5c158]" : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"}`}
           >
             <Icons.FolderTree className="w-5 h-5" /> Categories & Places
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab("ads")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === "ads" ? "bg-[#e5c158]/10 text-[#e5c158]" : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"}`}
+          >
+            <Icons.Megaphone className="w-5 h-5" /> Ads & Monetization
           </button>
         </nav>
         
@@ -848,6 +856,10 @@ export default function AdminDashboard() {
 
           {activeTab === "taxonomy" && (
             <TaxonomyManager />
+          )}
+
+          {activeTab === "ads" && (
+            <AdsManager />
           )}
 
           {editingListing && (

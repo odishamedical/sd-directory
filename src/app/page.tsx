@@ -36,6 +36,7 @@ export default function DirectoryHome() {
   const [activeClaimListing, setActiveClaimListing] = useState<any | null>(null);
   const [ssoMessageVisible, setSsoMessageVisible] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [searchAds, setSearchAds] = useState<any[]>([]);
 
   // Load claimed listings from local storage on load
   useEffect(() => {
@@ -85,8 +86,21 @@ export default function DirectoryHome() {
       }
     };
 
+    const fetchAds = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "ads"));
+        const activeSearchAds = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() } as any))
+          .filter(ad => ad.active && ad.position === "search_results");
+        setSearchAds(activeSearchAds);
+      } catch (err) {
+        console.error("Failed to load ads", err);
+      }
+    };
+
     fetchListings();
     fetchTaxonomy();
+    fetchAds();
   }, []);
 
   // Filter listings based on Search & Tabs & Sidebar selection
@@ -387,11 +401,27 @@ export default function DirectoryHome() {
             {/* Grid List */}
             {filteredListings.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredListings.map((lst) => {
+                {filteredListings.map((lst, index) => {
                   const isWishlisted = wishlist.includes(lst.id);
                   
+                  // Inject Ad after every 6 listings
+                  const adIndex = Math.floor(index / 6);
+                  const shouldShowAd = index > 0 && index % 6 === 0 && searchAds[adIndex];
+                  
                   return (
-                    <div 
+                    <React.Fragment key={lst.id}>
+                      {shouldShowAd && (
+                        <div className="md:col-span-2 xl:col-span-3 rounded-2xl overflow-hidden border border-[#e5c158]/30 relative aspect-[6/1] sm:aspect-[8/1] my-4 group shadow-xl">
+                          <a href={searchAds[adIndex].linkUrl} target="_blank" rel="noopener noreferrer">
+                            <img src={searchAds[adIndex].imageUrl} alt="Advertisement" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-bold text-[#e5c158] uppercase tracking-widest border border-[#e5c158]/20">
+                              Sponsored
+                            </div>
+                          </a>
+                        </div>
+                      )}
+                      
+                      <div 
                       key={lst.id}
                       onClick={() => router.push(`/listing/${lst.id}`)}
                       className={`glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ${lst.is_featured ? 'border-2 border-[#e5c158] shadow-[0_0_15px_rgba(229,193,88,0.3)]' : ''}`}
@@ -486,6 +516,7 @@ export default function DirectoryHome() {
                       </div>
 
                     </div>
+                    </React.Fragment>
                   );
                 })}
               </div>
