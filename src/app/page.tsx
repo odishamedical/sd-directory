@@ -131,6 +131,13 @@ export default function DirectoryHome() {
       );
     }
 
+    // Sort so featured listings always appear at the top
+    result.sort((a, b) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return 0; // fallback to original order
+    });
+
     setFilteredListings(result);
   }, [searchQuery, selectedTab, selectedCategories, selectedLocations, minRating, listings, claimedListingIds]);
 
@@ -387,7 +394,7 @@ export default function DirectoryHome() {
                     <div 
                       key={lst.id}
                       onClick={() => router.push(`/listing/${lst.id}`)}
-                      className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                      className={`glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ${lst.is_featured ? 'border-2 border-[#e5c158] shadow-[0_0_15px_rgba(229,193,88,0.3)]' : ''}`}
                     >
                       
                       {/* Photo Header */}
@@ -398,6 +405,12 @@ export default function DirectoryHome() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#040815]/90 via-transparent to-transparent" />
+                        
+                        {lst.is_featured && (
+                          <div className="absolute top-3 left-3 bg-gradient-to-r from-[#e5c158] to-[#996515] text-black font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                            <Icons.Star className="w-3 h-3 fill-current" /> Featured
+                          </div>
+                        )}
                         
                         {/* Wishlist Heart Toggle */}
                         <button 

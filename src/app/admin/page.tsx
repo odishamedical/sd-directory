@@ -200,6 +200,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleToggleFeatured = async (listingId: string, currentStatus: boolean) => {
+    try {
+      await updateDoc(doc(db, "listings", listingId), { is_featured: !currentStatus });
+      fetchListings(); // Refresh the listings list
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update featured status.");
+    }
+  };
+
   const handleRejectClaim = async (claimId: string) => {
     if (!confirm("Reject this claim?")) return;
     try {
@@ -747,6 +757,9 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex justify-end gap-2">
+                                <button onClick={() => handleToggleFeatured(lst.id, lst.is_featured)} className={`${lst.is_featured ? 'text-[#e5c158] bg-[#e5c158]/10' : 'text-slate-400 hover:text-[#e5c158] hover:bg-[#e5c158]/10'} p-2 rounded-lg transition-colors`} title={lst.is_featured ? "Remove Featured Status" : "Mark as Featured"}>
+                                  <Icons.Star className={`w-4 h-4 ${lst.is_featured ? 'fill-current' : ''}`} />
+                                </button>
                                 <button onClick={() => setEditingListing(lst)} className="text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 p-2 rounded-lg transition-colors" title="Edit Listing">
                                   <Icons.Edit3 className="w-4 h-4" />
                                 </button>

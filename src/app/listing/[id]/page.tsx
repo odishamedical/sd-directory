@@ -6,6 +6,7 @@ import { db, doc, getDoc, collection, getDocs, addDoc, query, orderBy, serverTim
 import * as Icons from "lucide-react";
 import ClaimModal from "../../../components/ClaimModal";
 import Header from "../../../components/Header";
+import { useAuth } from "@/context/AuthContext";
 
 function getYouTubeId(url: string) {
   if (!url) return null;
@@ -17,6 +18,7 @@ function getYouTubeId(url: string) {
 export default function ListingPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, loginWithGoogle } = useAuth();
   const listingId = params.id as string;
 
   const [listing, setListing] = useState<any>(null);
@@ -64,13 +66,18 @@ export default function ListingPage() {
 
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      alert("Please log in to submit a review.");
+      return;
+    }
     if (!newReviewText.trim()) return;
     setSubmittingReview(true);
     try {
       await addDoc(collection(db, `listings/${listingId}/reviews`), {
         text: newReviewText,
         rating: newReviewRating,
-        author: "Anonymous User",
+        author: user.displayName || user.email?.split('@')[0] || "Directory User",
+        uid: user.uid,
         createdAt: serverTimestamp()
       });
       setNewReviewText("");
@@ -222,25 +229,37 @@ export default function ListingPage() {
                 <Icons.Star className="w-6 h-6 text-[#e5c158]"/> User Reviews
               </h2>
               
-              <form onSubmit={submitReview} className="mb-8 bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  {[1,2,3,4,5].map(star => (
-                    <button type="button" key={star} onClick={() => setNewReviewRating(star)} className={`p-1 transition-colors ${star <= newReviewRating ? "text-[#e5c158]" : "text-slate-700 hover:text-slate-500"}`}>
-                      <Icons.Star className="w-6 h-6" fill={star <= newReviewRating ? "currentColor" : "none"}/>
-                    </button>
-                  ))}
+              {user ? (
+                <form onSubmit={submitReview} className="mb-8 bg-slate-900 border border-slate-800 rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    {[1,2,3,4,5].map(star => (
+                      <button type="button" key={star} onClick={() => setNewReviewRating(star)} className={`p-1 transition-colors ${star <= newReviewRating ? "text-[#e5c158]" : "text-slate-700 hover:text-slate-500"}`}>
+                        <Icons.Star className="w-6 h-6" fill={star <= newReviewRating ? "currentColor" : "none"}/>
+                      </button>
+                    ))}
+                  </div>
+                  <textarea 
+                    value={newReviewText}
+                    onChange={e => setNewReviewText(e.target.value)}
+                    placeholder="Write your review here..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none mb-3"
+                    rows={3}
+                  />
+                  <button type="submit" disabled={submittingReview} className="bg-[#e5c158] text-slate-950 font-bold px-6 py-2 rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50">
+                    {submittingReview ? "Posting..." : "Post Review"}
+                  </button>
+                </form>
+              ) : (
+                <div className="mb-8 bg-slate-900 border border-slate-800 rounded-xl p-8 text-center flex flex-col items-center justify-center">
+                  <Icons.MessageSquare className="w-12 h-12 text-slate-600 mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">Want to leave a review?</h3>
+                  <p className="text-slate-400 mb-6">Join the community to share your experience with {listing.name}.</p>
+                  <button onClick={loginWithGoogle} className="bg-white text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-slate-200 transition-colors shadow-lg">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5"/>
+                    Continue with Google
+                  </button>
                 </div>
-                <textarea 
-                  value={newReviewText}
-                  onChange={e => setNewReviewText(e.target.value)}
-                  placeholder="Write your review here..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none mb-3"
-                  rows={3}
-                />
-                <button type="submit" disabled={submittingReview} className="bg-[#e5c158] text-slate-950 font-bold px-6 py-2 rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50">
-                  {submittingReview ? "Posting..." : "Post Review"}
-                </button>
-              </form>
+              )}
 
               <div className="space-y-4">
                 {reviews.length === 0 ? (
