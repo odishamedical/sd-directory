@@ -33,6 +33,12 @@ export default function AdminDashboard() {
   const [taxonomyLocations, setTaxonomyLocations] = useState<any[]>([]);
   const [tagCategory, setTagCategory] = useState("");
   const [tagSubcategory, setTagSubcategory] = useState("");
+
+  // Manage Listings Filters
+  const [manageSearch, setManageSearch] = useState("");
+  const [manageCategory, setManageCategory] = useState("");
+  const [manageState, setManageState] = useState("");
+  const [manageDistrict, setManageDistrict] = useState("");
   const [tagState, setTagState] = useState("");
   const [tagDistrict, setTagDistrict] = useState("");
   const [tagTown, setTagTown] = useState("");
@@ -82,7 +88,7 @@ export default function AdminDashboard() {
     if (!isAuthorized) return;
     if (activeTab === "listings" || activeTab === "dashboard") fetchListings();
     if (activeTab === "claims" || activeTab === "dashboard") fetchClaims();
-    if (activeTab === "importer") fetchTaxonomy();
+    if (activeTab === "importer" || activeTab === "listings") fetchTaxonomy();
   }, [activeTab, isAuthorized]);
 
   const fetchTaxonomy = async () => {
@@ -604,6 +610,43 @@ export default function AdminDashboard() {
                   <Icons.Trash2 className="w-4 h-4" /> Delete All Data
                 </button>
               </div>
+
+              {/* Filters */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input 
+                  type="text" 
+                  placeholder="Search business name..." 
+                  value={manageSearch} 
+                  onChange={(e) => setManageSearch(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" 
+                />
+                <select 
+                  value={manageCategory} 
+                  onChange={(e) => setManageCategory(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none"
+                >
+                  <option value="">All Categories</option>
+                  {taxonomyCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+                <select 
+                  value={manageState} 
+                  onChange={(e) => { setManageState(e.target.value); setManageDistrict(""); }}
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none"
+                >
+                  <option value="">All States</option>
+                  {taxonomyLocations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
+                </select>
+                <select 
+                  value={manageDistrict} 
+                  onChange={(e) => setManageDistrict(e.target.value)}
+                  disabled={!manageState}
+                  className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none disabled:opacity-50"
+                >
+                  <option value="">All Districts</option>
+                  {taxonomyLocations.find(l => l.name === manageState)?.children.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                </select>
+              </div>
+
               <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm text-slate-300">
@@ -618,10 +661,17 @@ export default function AdminDashboard() {
                     <tbody className="divide-y divide-slate-800/50">
                       {isLoadingData ? (
                         <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">Loading...</td></tr>
-                      ) : listings.length === 0 ? (
-                        <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">No listings found.</td></tr>
-                      ) : (
-                        listings.map((lst) => (
+                      ) : (() => {
+                        const filteredListings = listings.filter(lst => {
+                          if (manageSearch && !lst.name.toLowerCase().includes(manageSearch.toLowerCase())) return false;
+                          if (manageCategory && lst.category !== manageCategory) return false;
+                          if (manageState && lst.state !== manageState) return false;
+                          if (manageDistrict && lst.district !== manageDistrict) return false;
+                          return true;
+                        });
+                        return filteredListings.length === 0 ? (
+                          <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">No listings match your filters.</td></tr>
+                        ) : filteredListings.map((lst) => (
                           <tr key={lst.id} className="hover:bg-slate-800/30 transition-colors">
                             <td className="px-6 py-4">
                               <div className="font-bold text-white">{lst.name}</div>
@@ -650,8 +700,8 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                           </tr>
-                        ))
-                      )}
+                        ));
+                      })()}
                     </tbody>
                   </table>
                 </div>
