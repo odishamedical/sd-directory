@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { db, collection, getDocs, doc, setDoc, addDoc, deleteDoc, storage, ref, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
+import { db, doc, getDoc, setDoc, storage, ref, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
 import * as Icons from "lucide-react";
 
 export default function AdsManager() {
@@ -26,9 +26,13 @@ export default function AdsManager() {
   const fetchAds = async () => {
     setLoading(true);
     try {
-      const snapshot = await getDocs(collection(db, "ads"));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAds(data);
+      const docRef = doc(db, "taxonomy", "ads");
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        setAds(snapshot.data().data || []);
+      } else {
+        setAds([]);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -68,16 +72,21 @@ export default function AdsManager() {
     
     setSaving(true);
     try {
-      await addDoc(collection(db, "ads"), {
+      const newAd = {
+        id: "ad_" + Date.now(),
         imageUrl,
         linkUrl,
         position,
         active,
         createdAt: new Date().toISOString()
-      });
+      };
+      
+      const updatedAds = [...ads, newAd];
+      await setDoc(doc(db, "taxonomy", "ads"), { data: updatedAds });
+      
+      setAds(updatedAds);
       setImageUrl("");
       setLinkUrl("");
-      fetchAds();
     } catch (err: any) {
       console.error(err);
       alert("Failed to create ad: " + err.message);
@@ -87,8 +96,9 @@ export default function AdsManager() {
 
   const handleToggleActive = async (ad: any) => {
     try {
-      await setDoc(doc(db, "ads", ad.id), { active: !ad.active }, { merge: true });
-      fetchAds();
+      const updatedAds = ads.map(a => a.id === ad.id ? { ...a, active: !a.active } : a);
+      await setDoc(doc(db, "taxonomy", "ads"), { data: updatedAds });
+      setAds(updatedAds);
     } catch (err) {
       console.error(err);
     }
@@ -97,8 +107,9 @@ export default function AdsManager() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this ad?")) return;
     try {
-      await deleteDoc(doc(db, "ads", id));
-      fetchAds();
+      const updatedAds = ads.filter(a => a.id !== id);
+      await setDoc(doc(db, "taxonomy", "ads"), { data: updatedAds });
+      setAds(updatedAds);
     } catch (err) {
       console.error(err);
     }

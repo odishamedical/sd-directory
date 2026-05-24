@@ -42,11 +42,12 @@ export default function ListingPage() {
 
   const fetchAds = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "ads"));
-      const activeSidebarAds = snapshot.docs
-        .map(d => ({ id: d.id, ...d.data() } as any))
-        .filter(ad => ad.active && ad.position === "listing_sidebar");
-      setSidebarAds(activeSidebarAds);
+      const snapshot = await getDoc(doc(db, "taxonomy", "ads"));
+      if (snapshot.exists()) {
+        const allAds = snapshot.data().data || [];
+        const activeSidebarAds = allAds.filter((ad: any) => ad.active && ad.position === "listing_sidebar");
+        setSidebarAds(activeSidebarAds);
+      }
     } catch (err) {
       console.error("Failed to load ads", err);
     }

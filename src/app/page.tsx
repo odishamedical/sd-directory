@@ -88,11 +88,12 @@ export default function DirectoryHome() {
 
     const fetchAds = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "ads"));
-        const activeSearchAds = snapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() } as any))
-          .filter(ad => ad.active && ad.position === "search_results");
-        setSearchAds(activeSearchAds);
+        const snapshot = await getDoc(doc(db, "taxonomy", "ads"));
+        if (snapshot.exists()) {
+          const allAds = snapshot.data().data || [];
+          const activeSearchAds = allAds.filter((ad: any) => ad.active && ad.position === "search_results");
+          setSearchAds(activeSearchAds);
+        }
       } catch (err) {
         console.error("Failed to load ads", err);
       }
