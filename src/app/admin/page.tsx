@@ -603,12 +603,56 @@ export default function AdminDashboard() {
             <div className="animate-fadeIn">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-black text-white">Manage Listings</h2>
-                <button 
-                  onClick={handleDeleteAllListings} 
-                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors"
-                >
-                  <Icons.Trash2 className="w-4 h-4" /> Delete All Data
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => {
+                      const csvRows = [
+                        ['Business Name', 'Category', 'Address', 'Phone', 'WhatsApp Link']
+                      ];
+                      
+                      const filteredListings = listings.filter(lst => {
+                        if (manageSearch && !lst.name.toLowerCase().includes(manageSearch.toLowerCase())) return false;
+                        if (manageCategory && lst.category !== manageCategory) return false;
+                        if (manageState && lst.state !== manageState) return false;
+                        if (manageDistrict && lst.district !== manageDistrict) return false;
+                        return true;
+                      });
+
+                      filteredListings.forEach(lst => {
+                        if (lst.phone) {
+                          const waLink = `https://api.whatsapp.com/send?phone=${lst.phone.replace(/\D/g, '')}`;
+                          csvRows.push([
+                            `"${lst.name.replace(/"/g, '""')}"`,
+                            `"${lst.category || ''}"`,
+                            `"${(lst.address || '').replace(/"/g, '""')}"`,
+                            `"${lst.phone}"`,
+                            waLink
+                          ]);
+                        }
+                      });
+
+                      const csvContent = csvRows.map(e => e.join(",")).join("\n");
+                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                      const link = document.createElement("a");
+                      const url = URL.createObjectURL(blob);
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", `sd-directory-contacts-${new Date().toISOString().split('T')[0]}.csv`);
+                      link.style.visibility = 'hidden';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors"
+                  >
+                    <Icons.Download className="w-4 h-4" /> Export Contacts (CSV)
+                  </button>
+                  <button 
+                    onClick={handleDeleteAllListings} 
+                    className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors"
+                  >
+                    <Icons.Trash2 className="w-4 h-4" /> Delete All Data
+                  </button>
+                </div>
               </div>
 
               {/* Filters */}
