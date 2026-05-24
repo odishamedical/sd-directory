@@ -12,6 +12,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const checkAuth = () => {
@@ -37,6 +38,15 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
       setUserName(localStorage.getItem("sd_current_user_name"));
       setUserAvatar(localStorage.getItem("sd_current_user_avatar"));
       setUserRole(localStorage.getItem("sd_current_user_role"));
+      
+      // Auto-detect Admin Mode from pathname prefix
+      const path = window.location.pathname;
+      const isAd = path.startsWith("/admin") || 
+                   path.startsWith("/portal") || 
+                   path.startsWith("/franchise") || 
+                   path.startsWith("/weaver") || 
+                   path.startsWith("/store");
+      setIsAdminMode(isAd);
     }
   };
 
@@ -71,12 +81,12 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   };
 
   const projects = [
-    { name: "Gold Hub", url: "https://sd-gold-hub.vercel.app" },
-    { name: "Sambalpuri Hub", url: "https://sd-bhulia-hub.vercel.app" },
-    { name: "Telemedicine", url: "https://sd-dehapa-hub.vercel.app" },
-    { name: "News", url: "https://sd-news-hub.vercel.app" },
-    { name: "Directory", url: "https://sd-directory.vercel.app" },
-    { name: "IT Service", url: "https://sd-it-hub-w3sk.vercel.app" }
+    { name: "Gold Hub", url: "https://sd-gold-hub.vercel.app", adminPath: "/admin" },
+    { name: "Sambalpuri Hub", url: "https://sd-bhulia-hub.vercel.app", adminPath: "/franchise/dashboard" },
+    { name: "Telemedicine", url: "https://sd-dehapa-hub.vercel.app", adminPath: "/portal" },
+    { name: "News", url: "https://sd-news-hub.vercel.app", adminPath: "/admin" },
+    { name: "Directory", url: "https://sd-directory.vercel.app", adminPath: "/admin" },
+    { name: "IT Service", url: "https://sd-it-hub-w3sk.vercel.app", adminPath: "/admin" }
   ];
 
   const getAuthCenterUrl = () => {
@@ -84,9 +94,11 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
     return `https://sd-auth-center.vercel.app?redirect_uri=${encodeURIComponent(window.location.href)}`;
   };
 
-  const getProjectUrl = (baseUrl: string) => {
-    if (!userEmail) return baseUrl;
-    const url = new URL(baseUrl);
+  const getProjectUrl = (baseUrl: string, adminPath: string) => {
+    const finalUrlString = isAdminMode ? (baseUrl + adminPath) : baseUrl;
+    const url = new URL(finalUrlString);
+    if (!userEmail) return url.toString();
+    
     url.searchParams.set("token", "sso_jump");
     url.searchParams.set("sso_email", userEmail);
     if (userName) url.searchParams.set("sso_name", userName);
@@ -146,6 +158,11 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
         <span className="text-[10px] font-black tracking-[0.2em] uppercase font-mono">SD ECOSYSTEM</span>
+        {isAdminMode && (
+          <span className="text-[8px] font-extrabold bg-[#C5A059]/20 text-[#C5A059] px-1.5 py-0.5 rounded border border-[#C5A059]/30 uppercase tracking-widest font-mono shrink-0">
+            ADMIN
+          </span>
+        )}
       </a>
 
       {/* Project Links (Scrollable row on mobile) */}
@@ -155,7 +172,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
           return (
             <a 
               key={p.name} 
-              href={getProjectUrl(p.url)}
+              href={getProjectUrl(p.url, p.adminPath)}
               className={isActive 
                 ? "active-pulse-button text-[9px] md:text-[10px] uppercase tracking-widest shrink-0" 
                 : "text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-[#C5A059] uppercase tracking-widest transition-colors py-1 px-2 md:px-3 shrink-0"
@@ -219,7 +236,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
                   className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-950/20 transition-colors text-left font-bold border-t border-[#2A344A]"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
                   </svg>
                   <span>Sign Out</span>
                 </button>
@@ -232,7 +249,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
             className="text-[9px] md:text-[10px] text-[#C5A059] hover:text-[#e5c158] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors"
           >
             <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
             </svg>
             <span>Sign In</span>
           </a>
