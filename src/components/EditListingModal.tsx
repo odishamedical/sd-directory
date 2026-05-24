@@ -21,6 +21,7 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     area: listing.area || "",
     street: listing.street || "",
     village: listing.village || "",
+    pincode: listing.pincode || "",
     description: listing.description || "",
     address: listing.address || "",
     phone: listing.phone || "",
@@ -53,13 +54,19 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
+    // Clean formData to remove any undefined values which Firestore rejects
+    const cleanData = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
+
     try {
-      await updateDoc(doc(db, "listings", listing.id), formData);
+      await updateDoc(doc(db, "listings", listing.id), cleanData);
       onRefresh();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to update listing", err);
-      alert("Failed to update listing.");
+      alert("Failed to update listing: " + (err.message || JSON.stringify(err)));
     }
     setLoading(false);
   };
@@ -156,6 +163,10 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
               <div className="space-y-1">
                 <label className="text-xs text-slate-400 font-bold">Village</label>
                 <input type="text" name="village" value={formData.village} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 font-bold">Pincode</label>
+                <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
               </div>
             </div>
           </div>
