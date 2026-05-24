@@ -39,6 +39,7 @@ export default function AdminDashboard() {
   const [tagArea, setTagArea] = useState("");
   const [tagStreet, setTagStreet] = useState("");
   const [tagVillage, setTagVillage] = useState("");
+  const [tagPincode, setTagPincode] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -211,7 +212,7 @@ export default function AdminDashboard() {
     setIsSearching(true); setErrorMsg(""); setSuccessMsg("");
     try {
       // Auto-append location tags to force Google to return highly localized results
-      const fullQuery = [searchQuery, tagArea, tagTown, tagDistrict, tagState].filter(Boolean).join(", ");
+      const fullQuery = [searchQuery, tagArea, tagTown, tagDistrict, tagState, tagPincode].filter(Boolean).join(", ");
       const res = await fetch(`/api/places?query=${encodeURIComponent(fullQuery)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to search places");
@@ -243,6 +244,7 @@ export default function AdminDashboard() {
           area: tagArea || "",
           street: tagStreet || "",
           village: tagVillage || "",
+          pincode: tagPincode || "",
           description: place.description || "",
           distance: place.distance || "",
           is_verified: true,
@@ -404,23 +406,31 @@ export default function AdminDashboard() {
                       {taxonomyLocations.find(l => l.name === tagState)?.children.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
                     </select>
                   </div>
+                </div>
 
-                  {/* Location Granular */}
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Town / Block</label>
-                    <input type="text" value={tagTown} onChange={e => setTagTown(e.target.value)} placeholder="e.g. Patia" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4 border-b border-slate-800">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">Town / Block</label>
+                    <input type="text" value={tagTown} onChange={e => setTagTown(e.target.value)} placeholder="e.g. Sambalpur" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Area</label>
-                    <input type="text" value={tagArea} onChange={e => setTagArea(e.target.value)} placeholder="e.g. Unit 9" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">Area</label>
+                    <input type="text" value={tagArea} onChange={e => setTagArea(e.target.value)} placeholder="e.g. Golebazar" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Street</label>
-                    <input type="text" value={tagStreet} onChange={e => setTagStreet(e.target.value)} placeholder="e.g. Gaiety Talkies Rd" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">Street</label>
+                    <input type="text" value={tagStreet} onChange={e => setTagStreet(e.target.value)} placeholder="e.g. Gaiety Talkies Rd" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Village</label>
-                    <input type="text" value={tagVillage} onChange={e => setTagVillage(e.target.value)} placeholder="e.g. Attabira" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">Village</label>
+                    <input type="text" value={tagVillage} onChange={e => setTagVillage(e.target.value)} placeholder="e.g. Attabira" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4 border-b border-slate-800">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">Pincode (Optional)</label>
+                    <input type="text" value={tagPincode} onChange={e => setTagPincode(e.target.value)} placeholder="e.g. 768001" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
                   </div>
                 </div>
 
