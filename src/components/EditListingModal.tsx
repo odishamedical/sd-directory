@@ -118,8 +118,15 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
                 <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="text-xs text-slate-400 font-bold">Description</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
+                <label className="text-xs text-slate-400 font-bold">Description (SEO Rich Content)</label>
+                <textarea 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleChange} 
+                  rows={6} 
+                  placeholder="Write a detailed description of your business. Mention your history, specialties, and key services to help Google index your page better."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white text-sm outline-none focus:border-[#e5c158] leading-relaxed" 
+                />
               </div>
               <div className="space-y-1 md:col-span-2">
                 <label className="text-xs text-slate-400 font-bold">Full Address (Legacy)</label>
