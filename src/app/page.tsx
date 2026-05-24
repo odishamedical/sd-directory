@@ -7,12 +7,16 @@ import ClaimModal from "../components/ClaimModal";
 import ListingDetailModal from "../components/ListingDetailModal";
 import { Listing } from "../data/listings";
 import EcosystemSwitcher from "../components/EcosystemSwitcher";
-import { db, collection, getDocs, query, orderBy } from "../lib/firebase";
+import { db, collection, getDocs, query, orderBy, getDoc, doc } from "../lib/firebase";
 
 export default function DirectoryHome() {
   // Listings State
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+  
+  // Taxonomy State
+  const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
+  const [taxonomyLocations, setTaxonomyLocations] = useState<any[]>([]);
   
   // Search & Categories Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,7 +74,19 @@ export default function DirectoryHome() {
       }
     };
     
+    const fetchTaxonomy = async () => {
+      try {
+        const catDoc = await getDoc(doc(db, "taxonomy", "categories"));
+        if (catDoc.exists()) setTaxonomyCategories(catDoc.data().data || []);
+        const locDoc = await getDoc(doc(db, "taxonomy", "locations"));
+        if (locDoc.exists()) setTaxonomyLocations(locDoc.data().data || []);
+      } catch (err) {
+        console.error("Failed to load taxonomy", err);
+      }
+    };
+
     fetchListings();
+    fetchTaxonomy();
   }, []);
 
   // Filter listings based on Search & Tabs & Sidebar selection
@@ -82,18 +98,7 @@ export default function DirectoryHome() {
 
     // Filter by Top Category Tabs
     if (selectedTab !== "All") {
-      const tabMap: Record<string, string> = {
-        "Jewelry": "jewelry",
-        "Handlooms": "handlooms",
-        "Doctors": "doctors",
-        "IT Services": "it_services",
-        "Retail": "retail",
-        "Restaurants": "restaurants"
-      };
-      const cat = tabMap[selectedTab];
-      if (cat) {
-        result = result.filter(item => item.category === cat);
-      }
+      result = result.filter(item => item.category === selectedTab);
     }
 
     // Filter by Sidebar Categories (if any selected)
@@ -274,13 +279,19 @@ export default function DirectoryHome() {
 
           {/* Categories Tab pills */}
           <div className="flex flex-wrap items-center justify-center gap-2 max-w-3xl">
-            {["All", "Jewelry", "Handlooms", "Doctors", "IT Services", "Retail", "Restaurants"].map((tab) => (
+            <button 
+              onClick={() => setSelectedTab("All")}
+              className={tabClass("All")}
+            >
+              All Listings
+            </button>
+            {taxonomyCategories.map((tab) => (
               <button 
-                key={tab} 
-                onClick={() => setSelectedTab(tab)}
-                className={tabClass(tab)}
+                key={tab.id} 
+                onClick={() => setSelectedTab(tab.name)}
+                className={tabClass(tab.name)}
               >
-                {tab}
+                {tab.name}
               </button>
             ))}
           </div>
@@ -328,60 +339,34 @@ export default function DirectoryHome() {
               {/* Categories Sidebar Selection */}
               <div className="space-y-3">
                 <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category</h5>
-                <div className="space-y-2 text-xs text-slate-300">
-                  {[
-                    { key: "jewelry", label: "Jewelry Stores" },
-                    { key: "handlooms", label: "Handloom Weavers" },
-                    { key: "doctors", label: "Doctors / Clinics" },
-                    { key: "it_services", label: "IT / Tech Services" }
-                  ].map((c) => (
-                    <label key={c.key} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
+                <div className="space-y-2 text-xs text-slate-300 max-h-48 overflow-y-auto pr-2">
+                  {taxonomyCategories.map((c) => (
+                    <label key={c.id} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
                       <input 
                         type="checkbox"
-                        checked={selectedCategories.includes(c.key)}
-                        onChange={() => handleCategoryCheckboxChange(c.key)}
+                        checked={selectedCategories.includes(c.name)}
+                        onChange={() => handleCategoryCheckboxChange(c.name)}
                         className="rounded bg-slate-900 border-slate-700 text-[#e5c158] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
                       />
-                      <span>{c.label}</span>
+                      <span>{c.name}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Retail / Restaurants Sidebar Selection */}
-              <div className="space-y-3">
-                <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Food & Retail</h5>
-                <div className="space-y-2 text-xs text-slate-300">
-                  {[
-                    { key: "retail", label: "General Retail" },
-                    { key: "restaurants", label: "Restaurants & Cafes" }
-                  ].map((c) => (
-                    <label key={c.key} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
-                      <input 
-                        type="checkbox"
-                        checked={selectedCategories.includes(c.key)}
-                        onChange={() => handleCategoryCheckboxChange(c.key)}
-                        className="rounded bg-slate-900 border-slate-700 text-[#e5c158] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
-                      />
-                      <span>{c.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Location Selectors */}
-              <div className="space-y-3">
+              {/* Location Sidebar Selection */}
+              <div className="space-y-3 pt-4 border-t border-slate-800">
                 <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Location</h5>
-                <div className="space-y-2 text-xs text-slate-300">
-                  {["Bhubaneswar", "Cuttack", "Sonepur"].map((loc) => (
-                    <label key={loc} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
+                <div className="space-y-2 text-xs text-slate-300 max-h-48 overflow-y-auto pr-2">
+                  {taxonomyLocations.flatMap(state => state.children).map((d: any) => (
+                    <label key={d.id} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
                       <input 
                         type="checkbox"
-                        checked={selectedLocations.includes(loc)}
-                        onChange={() => handleLocationCheckboxChange(loc)}
+                        checked={selectedLocations.includes(d.name)}
+                        onChange={() => handleLocationCheckboxChange(d.name)}
                         className="rounded bg-slate-900 border-slate-700 text-[#e5c158] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
                       />
-                      <span>{loc}</span>
+                      <span>{d.name}</span>
                     </label>
                   ))}
                 </div>
