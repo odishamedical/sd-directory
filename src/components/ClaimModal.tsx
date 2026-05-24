@@ -164,14 +164,29 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
               </div>
 
               <div>
-                <label htmlFor="website" className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Official Website or Facebook/Social Page *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="website" className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Official Website or Facebook/Social Page *</label>
+                  <label className="flex items-center gap-1.5 cursor-pointer group">
+                    <input 
+                      type="checkbox" 
+                      className="accent-[#e5c158] w-3 h-3 cursor-pointer"
+                      checked={website === "I don't have a website or social media page"}
+                      onChange={(e) => {
+                        if (e.target.checked) setWebsite("I don't have a website or social media page");
+                        else setWebsite("");
+                      }}
+                    />
+                    <span className="text-[10px] text-slate-500 group-hover:text-slate-300 transition-colors">I don't have one</span>
+                  </label>
+                </div>
                 <input 
                   type="url" 
                   id="website"
                   placeholder="https://example.com or https://facebook.com/business"
-                  value={website}
+                  value={website === "I don't have a website or social media page" ? "" : website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
+                  disabled={website === "I don't have a website or social media page"}
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
