@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { db, doc, getDoc, collection, getDocs, addDoc, query, orderBy, serverTimestamp } from "../../../lib/firebase";
 import * as Icons from "lucide-react";
 import ClaimModal from "../../../components/ClaimModal";
+import Header from "../../../components/Header";
 
 export default function ListingPage() {
   const params = useParams();
@@ -95,21 +96,16 @@ export default function ListingPage() {
 
   return (
     <div className="min-h-screen bg-[#040815] pb-24">
-      {/* Top Navigation */}
-      <div className="bg-[#090F1D] border-b border-[#1e293b] sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button onClick={() => router.push("/")} className="text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
-            <Icons.ArrowLeft className="w-5 h-5"/> Back to Directory
-          </button>
-          {!listing.is_claimed && (
-            <button onClick={() => setShowClaimModal(true)} className="px-4 py-1.5 rounded-lg border border-[#e5c158] text-[#e5c158] hover:bg-[#e5c158] hover:text-slate-950 font-bold text-sm transition-colors">
-              Claim this Business
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Global Header */}
+      <Header />
 
       <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-6 flex items-center justify-between">
+          <button onClick={() => router.push("/")} className="text-slate-400 hover:text-white flex items-center gap-2 transition-colors font-bold text-sm">
+            <Icons.ArrowLeft className="w-4 h-4"/> Back to Directory
+          </button>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Content Column */}
@@ -212,7 +208,14 @@ export default function ListingPage() {
             
             {/* Quick Actions / Contact */}
             <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-6">
-              <h3 className="font-bold text-white mb-4 border-b border-slate-800 pb-2">Contact & Details</h3>
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <h3 className="font-bold text-white">Contact & Details</h3>
+                {!listing.is_claimed && (
+                  <button onClick={() => setShowClaimModal(true)} className="px-3 py-1.5 rounded-lg border border-[#e5c158] text-[#e5c158] hover:bg-[#e5c158] hover:text-slate-950 font-bold text-xs transition-colors whitespace-nowrap">
+                    Claim Business
+                  </button>
+                )}
+              </div>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-slate-900 rounded-lg shrink-0 text-slate-400"><Icons.MapPin className="w-5 h-5"/></div>
