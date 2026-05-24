@@ -11,6 +11,6 @@ const firebaseConfig = {
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+const db = getFirestore(app, "default");
 
 export { app, db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy };
