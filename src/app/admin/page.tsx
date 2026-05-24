@@ -676,6 +676,11 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4">
                               <div className="font-bold text-white">{lst.name}</div>
                               <div className="text-xs text-slate-500">{lst.address}</div>
+                              {lst.phone && (
+                                <div className="text-xs text-[#e5c158] mt-1 flex items-center gap-1 font-bold">
+                                  <Icons.Phone className="w-3 h-3" /> {lst.phone}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-4">
                               <span className="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider">
