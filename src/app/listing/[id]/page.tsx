@@ -344,7 +344,7 @@ export default function ListingPage() {
                 loading="lazy" 
                 allowFullScreen 
                 referrerPolicy="no-referrer-when-downgrade" 
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyCqxlojiRrV5lUWbxdOGEmvpPKuKlxi3oA&q=${encodeURIComponent(`${listing.name}, ${listing.address || listing.district + ", Odisha"}`)}`}>
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDaDGYrNJkyswlqG8H0ySwWxfT0yxaGzFc&q=${encodeURIComponent(`${listing.name}, ${listing.address || listing.district + ", Odisha"}`)}`}>
               </iframe>
               <div className="absolute top-4 right-4 z-10 bg-slate-950/90 backdrop-blur-sm border border-slate-800 rounded px-2 py-1 text-[10px] text-[#e5c158] font-bold uppercase tracking-wider">
                 Live Map

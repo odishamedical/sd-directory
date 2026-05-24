@@ -14,7 +14,7 @@ export default function MapPreview({ city = "Bhubaneswar" }: MapPreviewProps) {
         loading="lazy" 
         allowFullScreen 
         referrerPolicy="no-referrer-when-downgrade" 
-        src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyCqxlojiRrV5lUWbxdOGEmvpPKuKlxi3oA&q=${encodeURIComponent(city + ", Odisha, India")}`}>
+        src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDaDGYrNJkyswlqG8H0ySwWxfT0yxaGzFc&q=${encodeURIComponent(city + ", Odisha, India")}`}>
       </iframe>
       <div className="absolute top-2 right-2 z-10 bg-slate-950/80 backdrop-blur-sm border border-slate-800 rounded px-1.5 py-0.5 text-[8px] text-[#e5c158] font-bold">
         Live Map
