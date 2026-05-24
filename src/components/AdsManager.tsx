@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { db, collection, getDocs, doc, setDoc, deleteDoc } from "@/lib/firebase";
+import { db, collection, getDocs, doc, setDoc, addDoc, deleteDoc, storage, ref, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
 import * as Icons from "lucide-react";
 
 export default function AdsManager() {
@@ -14,6 +14,10 @@ export default function AdsManager() {
   const [linkUrl, setLinkUrl] = useState("");
   const [position, setPosition] = useState("search_results"); // or sidebar
   const [active, setActive] = useState(true);
+  
+  // Upload State
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     fetchAds();
@@ -31,14 +35,40 @@ export default function AdsManager() {
     setLoading(false);
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const storageRef = ref(storage, `ads/${Date.now()}_${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(progress);
+      }, 
+      (error) => {
+        console.error("Upload failed", error);
+        alert("Upload failed.");
+        setUploading(false);
+      }, 
+      async () => {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        setImageUrl(downloadURL);
+        setUploading(false);
+        setUploadProgress(0);
+      }
+    );
+  };
+
   const handleAddAd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageUrl || !linkUrl) return alert("Please provide both Image URL and Link URL");
     
     setSaving(true);
     try {
-      const newAdRef = doc(collection(db, "ads"));
-      await setDoc(newAdRef, {
+      await addDoc(collection(db, "ads"), {
         imageUrl,
         linkUrl,
         position,
@@ -48,9 +78,9 @@ export default function AdsManager() {
       setImageUrl("");
       setLinkUrl("");
       fetchAds();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to create ad");
+      alert("Failed to create ad: " + err.message);
     }
     setSaving(false);
   };
@@ -94,15 +124,29 @@ export default function AdsManager() {
         </h3>
         <form onSubmit={handleAddAd} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Image URL (Banner Graphic)</label>
-            <input 
-              type="url" 
-              value={imageUrl} 
-              onChange={e => setImageUrl(e.target.value)} 
-              className="w-full bg-[#040815] border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#e5c158]/50" 
-              placeholder="https://example.com/banner.jpg"
-              required
-            />
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Image URL or Upload</label>
+            <div className="flex gap-2">
+              <input 
+                type="url" 
+                value={imageUrl} 
+                onChange={e => setImageUrl(e.target.value)} 
+                className="flex-1 bg-[#040815] border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#e5c158]/50" 
+                placeholder="https://example.com/banner.jpg"
+                required
+              />
+              <div className="relative">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={uploading}
+                />
+                <div className={`h-full px-4 rounded-xl flex items-center justify-center border transition-colors ${uploading ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-800/50 border-slate-700 hover:bg-slate-800 text-white cursor-pointer'}`}>
+                  {uploading ? `${Math.round(uploadProgress)}%` : <Icons.Upload className="w-5 h-5" />}
+                </div>
+              </div>
+            </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Destination Link URL</label>

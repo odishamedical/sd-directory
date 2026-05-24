@@ -11,10 +11,12 @@ const firebaseConfig = {
 };
 
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app, "default");
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+const storage = getStorage(app);
 
-export { app, db, auth, googleProvider, collection, getDocs, getDoc, setDoc, writeBatch, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where };
+export { app, db, auth, googleProvider, storage, ref, uploadBytesResumable, getDownloadURL, collection, getDocs, getDoc, setDoc, writeBatch, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where };
