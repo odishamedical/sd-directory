@@ -210,7 +210,9 @@ export default function AdminDashboard() {
     if (!searchQuery) return;
     setIsSearching(true); setErrorMsg(""); setSuccessMsg("");
     try {
-      const res = await fetch(`/api/places?query=${encodeURIComponent(searchQuery)}`);
+      // Auto-append location tags to force Google to return highly localized results
+      const fullQuery = [searchQuery, tagArea, tagTown, tagDistrict, tagState].filter(Boolean).join(", ");
+      const res = await fetch(`/api/places?query=${encodeURIComponent(fullQuery)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to search places");
       setSearchResults(data.results);
