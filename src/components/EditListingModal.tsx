@@ -25,7 +25,8 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     description: listing.description || "",
     address: listing.address || "",
     phone: listing.phone || "",
-    image: listing.image || ""
+    image: listing.image || "",
+    products: listing.products || []
   });
 
   const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
@@ -49,6 +50,27 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addProduct = () => {
+    setFormData(prev => ({
+      ...prev,
+      products: [...prev.products, { id: Date.now().toString(), name: "", price: "", type: "product", description: "" }]
+    }));
+  };
+
+  const removeProduct = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      products: prev.products.filter((p: any) => p.id !== id)
+    }));
+  };
+
+  const updateProduct = (id: string, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      products: prev.products.map((p: any) => p.id === id ? { ...p, [field]: value } : p)
+    }));
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -168,6 +190,48 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
                 <label className="text-xs text-slate-400 font-bold">Pincode</label>
                 <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
               </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+              <h3 className="text-[#e5c158] font-bold text-sm uppercase tracking-wider">Products & Services</h3>
+              <button type="button" onClick={addProduct} className="text-xs bg-[#1e293b] hover:bg-[#2a3a52] text-white px-2 py-1 rounded transition-colors flex items-center gap-1">
+                <Icons.Plus className="w-3 h-3"/> Add Item
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {formData.products.length === 0 ? (
+                <p className="text-xs text-slate-500 italic">No products or services added yet.</p>
+              ) : formData.products.map((prod: any) => (
+                <div key={prod.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 relative">
+                  <button type="button" onClick={() => removeProduct(prod.id)} className="absolute top-3 right-3 text-slate-500 hover:text-red-400 transition-colors">
+                    <Icons.Trash2 className="w-4 h-4"/>
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pr-8">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase text-slate-400 font-bold">Name</label>
+                      <input type="text" value={prod.name} onChange={e => updateProduct(prod.id, 'name', e.target.value)} placeholder="e.g. Silk Saree" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs outline-none focus:border-[#e5c158]" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase text-slate-400 font-bold">Price / Fee</label>
+                      <input type="text" value={prod.price} onChange={e => updateProduct(prod.id, 'price', e.target.value)} placeholder="e.g. ₹5,000" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs outline-none focus:border-[#e5c158]" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase text-slate-400 font-bold">Type</label>
+                      <select value={prod.type} onChange={e => updateProduct(prod.id, 'type', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs outline-none focus:border-[#e5c158]">
+                        <option value="product">Product (for Sale)</option>
+                        <option value="service">Service (Booking/Consultancy)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1 md:col-span-3">
+                      <label className="text-[10px] uppercase text-slate-400 font-bold">Short Description</label>
+                      <input type="text" value={prod.description} onChange={e => updateProduct(prod.id, 'description', e.target.value)} placeholder="e.g. Pure authentic handwoven silk..." className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs outline-none focus:border-[#e5c158]" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

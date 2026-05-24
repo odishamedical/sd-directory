@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import * as Icons from "lucide-react";
 import MapPreview from "../components/MapPreview";
 import ClaimModal from "../components/ClaimModal";
-import ListingDetailModal from "../components/ListingDetailModal";
 import { Listing } from "../data/listings";
 import EcosystemSwitcher from "../components/EcosystemSwitcher";
 import { db, collection, getDocs, query, orderBy, getDoc, doc } from "../lib/firebase";
 
 export default function DirectoryHome() {
+  const router = useRouter();
+
   // Listings State
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+  const [listings, setListings] = useState<any[]>([]);
+  const [filteredListings, setFilteredListings] = useState<any[]>([]);
   
   // Taxonomy State
   const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
@@ -30,8 +32,7 @@ export default function DirectoryHome() {
   // Interaction States
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [claimedListingIds, setClaimedListingIds] = useState<string[]>([]);
-  const [activeDetailListing, setActiveDetailListing] = useState<Listing | null>(null);
-  const [activeClaimListing, setActiveClaimListing] = useState<Listing | null>(null);
+  const [activeClaimListing, setActiveClaimListing] = useState<any | null>(null);
   const [ssoMessageVisible, setSsoMessageVisible] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -122,11 +123,12 @@ export default function DirectoryHome() {
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase();
       result = result.filter(item => 
-        item.name.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        item.address.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        (item.features && item.features.some(f => f.toLowerCase().includes(q)))
+        (item.name && item.name.toLowerCase().includes(q)) ||
+        (item.description && item.description.toLowerCase().includes(q)) ||
+        (item.address && item.address.toLowerCase().includes(q)) ||
+        (item.category && item.category.toLowerCase().includes(q)) ||
+        (item.features && item.features.some((f: string) => f.toLowerCase().includes(q))) ||
+        (item.products && item.products.some((p: any) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.type.toLowerCase().includes(q)))
       );
     }
 
@@ -430,7 +432,7 @@ export default function DirectoryHome() {
                   return (
                     <div 
                       key={lst.id}
-                      onClick={() => setActiveDetailListing(lst)}
+                      onClick={() => router.push(`/listing/${lst.id}`)}
                       className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
                     >
                       
@@ -493,33 +495,23 @@ export default function DirectoryHome() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveDetailListing(lst);
+                              router.push(`/listing/${lst.id}`);
                             }}
                             className="w-full py-2.5 rounded-xl border border-slate-700 hover:border-slate-400 bg-slate-950/20 hover:bg-slate-900/60 text-slate-300 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
                           >
                             View Details
                           </button>
                           
-                          {lst.is_claimed ? (
-                            <a 
-                              href={lst.external_url || "#"}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="w-full py-2.5 rounded-xl bg-slate-900/60 border border-[#e5c158]/35 text-[#e5c158] hover:bg-[#e5c158] hover:text-slate-950 transition-all font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-sm"
-                            >
-                              <Icons.ExternalLink className="w-3.5 h-3.5" />
-                              <span>Sovereign Storefront</span>
-                            </a>
-                          ) : (
+                          {/* Only show Claim if it has an owner but isn't claimed yet (Mock Logic) */}
+                          {!lst.is_claimed && (
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setActiveClaimListing(lst);
                               }}
-                              className="w-full py-2.5 rounded-xl bg-gold-gradient text-slate-950 font-black text-xs uppercase tracking-widest transition-all hover:opacity-90 shadow-sm cursor-pointer"
+                              className="w-full py-2.5 rounded-xl border border-[#e5c158]/50 hover:border-[#e5c158] bg-[#e5c158]/10 hover:bg-[#e5c158]/20 text-[#e5c158] font-bold text-xs uppercase tracking-wider transition-colors"
                             >
-                              Claim This Listing
+                              Claim this Listing
                             </button>
                           )}
                         </div>
@@ -564,17 +556,6 @@ export default function DirectoryHome() {
       </footer>
 
       {/* 5. Modals Overlay */}
-      {activeDetailListing && (
-        <ListingDetailModal 
-          listing={activeDetailListing} 
-          onClose={() => setActiveDetailListing(null)} 
-          onClaim={() => {
-            setActiveClaimListing(activeDetailListing);
-            setActiveDetailListing(null);
-          }}
-        />
-      )}
-
       {activeClaimListing && (
         <ClaimModal 
           listing={activeClaimListing} 

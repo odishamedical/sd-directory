@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimestamp, getDoc, writeBatch } from "../../lib/firebase";
+import { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimestamp, getDoc, writeBatch, setDoc } from "../../lib/firebase";
 import * as Icons from "lucide-react";
 import TaxonomyManager from "../../components/TaxonomyManager";
 import EditListingModal from "../../components/EditListingModal";
@@ -93,6 +93,61 @@ export default function AdminDashboard() {
       if (locDoc.exists()) setTaxonomyLocations(locDoc.data().data || []);
     } catch (err) {
       console.error("Failed to load taxonomy", err);
+    }
+  };
+
+  const handleCategoryChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "__NEW__") {
+      const name = prompt("Enter new Category name (e.g., Doctors, Retail):");
+      if (!name) return;
+      const newCats = [...taxonomyCategories, { id: Date.now().toString(), name, children: [] }];
+      try {
+        await setDoc(doc(db, "taxonomy", "categories"), { data: newCats });
+        setTaxonomyCategories(newCats);
+        setTagCategory(name);
+        setTagSubcategory("");
+      } catch (err) { alert("Failed to add category"); }
+    } else {
+      setTagCategory(val);
+      setTagSubcategory("");
+    }
+  };
+
+  const handleStateChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "__NEW__") {
+      const name = prompt("Enter new State name (e.g., Odisha, Delhi):");
+      if (!name) return;
+      const newLocs = [...taxonomyLocations, { id: Date.now().toString(), name, children: [] }];
+      try {
+        await setDoc(doc(db, "taxonomy", "locations"), { data: newLocs });
+        setTaxonomyLocations(newLocs);
+        setTagState(name);
+        setTagDistrict("");
+      } catch (err) { alert("Failed to add state"); }
+    } else {
+      setTagState(val);
+      setTagDistrict("");
+    }
+  };
+
+  const handleDistrictChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "__NEW__") {
+      const name = prompt("Enter new District name:");
+      if (!name) return;
+      const newLocs = taxonomyLocations.map(l => {
+        if (l.name === tagState) return { ...l, children: [...l.children, { id: Date.now().toString(), name }] };
+        return l;
+      });
+      try {
+        await setDoc(doc(db, "taxonomy", "locations"), { data: newLocs });
+        setTaxonomyLocations(newLocs);
+        setTagDistrict(name);
+      } catch (err) { alert("Failed to add district"); }
+    } else {
+      setTagDistrict(val);
     }
   };
 
@@ -381,9 +436,10 @@ export default function AdminDashboard() {
                   {/* Categorization */}
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Category *</label>
-                    <select value={tagCategory} onChange={e => setTagCategory(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none">
+                    <select value={tagCategory} onChange={handleCategoryChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none">
                       <option value="">Select Category...</option>
                       {taxonomyCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      <option value="__NEW__" className="text-[#e5c158] font-bold">+ Add New Category...</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -394,16 +450,18 @@ export default function AdminDashboard() {
                   {/* Location High Level */}
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">State</label>
-                    <select value={tagState} onChange={e => {setTagState(e.target.value); setTagDistrict("");}} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none">
+                    <select value={tagState} onChange={handleStateChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none">
                       <option value="">Select State...</option>
                       {taxonomyLocations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
+                      <option value="__NEW__" className="text-[#e5c158] font-bold">+ Add New State...</option>
                     </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">District</label>
-                    <select value={tagDistrict} onChange={e => setTagDistrict(e.target.value)} disabled={!tagState} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none disabled:opacity-50">
+                    <select value={tagDistrict} onChange={handleDistrictChange} disabled={!tagState} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none disabled:opacity-50">
                       <option value="">Select District...</option>
                       {taxonomyLocations.find(l => l.name === tagState)?.children.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                      {tagState && <option value="__NEW__" className="text-[#e5c158] font-bold">+ Add New District...</option>}
                     </select>
                   </div>
                 </div>
