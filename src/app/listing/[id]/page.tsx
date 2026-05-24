@@ -7,6 +7,13 @@ import * as Icons from "lucide-react";
 import ClaimModal from "../../../components/ClaimModal";
 import Header from "../../../components/Header";
 
+function getYouTubeId(url: string) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
 export default function ListingPage() {
   const params = useParams();
   const router = useRouter();
@@ -124,15 +131,66 @@ export default function ListingPage() {
                   <CatIcon className="w-4 h-4" />
                   {theme.label}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black font-serif text-white tracking-tight">{listing.name}</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-4xl md:text-5xl font-black font-serif text-white tracking-tight">{listing.name}</h1>
+                  {listing.is_claimed && (
+                    <div className="bg-blue-500/20 border border-blue-500/40 text-blue-400 px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-sm mt-2" title="SD Verified Listing">
+                      <Icons.BadgeCheck className="w-5 h-5" />
+                      <span className="text-xs font-bold uppercase tracking-wider hidden md:inline">Verified</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* About Section */}
             <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-8">
               <h2 className="text-2xl font-bold text-white mb-4">About {listing.name}</h2>
-              <p className="text-slate-300 leading-relaxed text-lg">{listing.description || "No description provided."}</p>
+              <p className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap">{listing.description || "No description provided."}</p>
             </div>
+
+            {/* Media & Gallery Section */}
+            {(listing.youtubeUrl || listing.youtubeUrl2 || listing.galleryImage1 || listing.galleryImage2) && (
+              <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-8">
+                <h2 className="text-2xl font-bold text-[#e5c158] mb-6 flex items-center gap-2">
+                  <Icons.Image className="w-6 h-6"/> Media & Gallery
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {listing.youtubeUrl && getYouTubeId(listing.youtubeUrl) && (
+                    <div className="rounded-xl overflow-hidden border border-[#1e293b] aspect-video">
+                      <iframe 
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${getYouTubeId(listing.youtubeUrl)}`}
+                        title="YouTube video player" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  {listing.youtubeUrl2 && getYouTubeId(listing.youtubeUrl2) && (
+                    <div className="rounded-xl overflow-hidden border border-[#1e293b] aspect-video">
+                      <iframe 
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${getYouTubeId(listing.youtubeUrl2)}`}
+                        title="YouTube video player" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  {listing.is_claimed && listing.galleryImage1 && (
+                    <div className="rounded-xl overflow-hidden border border-[#1e293b] aspect-video">
+                      <img src={listing.galleryImage1} alt="Gallery Image 1" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  {listing.is_claimed && listing.galleryImage2 && (
+                    <div className="rounded-xl overflow-hidden border border-[#1e293b] aspect-video">
+                      <img src={listing.galleryImage2} alt="Gallery Image 2" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Products & Services Section */}
             {products.length > 0 && (

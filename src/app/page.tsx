@@ -423,7 +423,7 @@ export default function DirectoryHome() {
                             <h3 className="text-base font-extrabold text-white font-serif line-clamp-1 group-hover:text-[#e5c158] transition-colors">
                               {lst.name}
                             </h3>
-                            {lst.is_verified && (
+                            {lst.is_claimed && (
                               <div className="w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 mt-0.5" title="SD Verified Listing">
                                 <Icons.Check className="w-3 h-3" />
                               </div>

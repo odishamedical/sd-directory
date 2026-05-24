@@ -27,7 +27,11 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     address: listing.address || "",
     phone: listing.phone || "",
     image: listing.image || "",
-    products: listing.products || []
+    products: listing.products || [],
+    youtubeUrl: listing.youtubeUrl || "",
+    youtubeUrl2: listing.youtubeUrl2 || "",
+    galleryImage1: listing.galleryImage1 || "",
+    galleryImage2: listing.galleryImage2 || ""
   });
 
   const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
@@ -238,6 +242,33 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
                 <label className="text-xs text-slate-400 font-bold">Pincode</label>
                 <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
               </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-[#e5c158] font-bold text-sm uppercase tracking-wider border-b border-slate-800 pb-2">Media & Gallery</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 font-bold">YouTube Video URL 1</label>
+                <input type="text" name="youtubeUrl" value={formData.youtubeUrl} onChange={handleChange} placeholder="e.g. https://youtube.com/watch?v=..." className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 font-bold">YouTube Video URL 2</label>
+                <input type="text" name="youtubeUrl2" value={formData.youtubeUrl2} onChange={handleChange} placeholder="Optional second video" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
+              </div>
+              
+              {listing.is_claimed && (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-xs text-blue-400 font-bold flex items-center gap-1"><Icons.BadgeCheck className="w-3 h-3"/> Verified Feature: Gallery Image 1</label>
+                    <input type="text" name="galleryImage1" value={formData.galleryImage1} onChange={handleChange} placeholder="Image URL" className="w-full bg-slate-950 border border-blue-500/30 rounded-lg p-2.5 text-white text-sm outline-none focus:border-blue-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-blue-400 font-bold flex items-center gap-1"><Icons.BadgeCheck className="w-3 h-3"/> Verified Feature: Gallery Image 2</label>
+                    <input type="text" name="galleryImage2" value={formData.galleryImage2} onChange={handleChange} placeholder="Image URL" className="w-full bg-slate-950 border border-blue-500/30 rounded-lg p-2.5 text-white text-sm outline-none focus:border-blue-400" />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
