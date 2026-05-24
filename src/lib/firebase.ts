@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, writeBatch } from "firebase/firestore";
+import { getFirestore, collection, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, writeBatch, where } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBz0OIk4xmOZras83es5HmJc03Ae60sMg8",
@@ -17,4 +17,4 @@ const db = getFirestore(app, "default");
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { app, db, auth, googleProvider, collection, getDocs, getDoc, setDoc, writeBatch, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy };
+export { app, db, auth, googleProvider, collection, getDocs, getDoc, setDoc, writeBatch, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where };
