@@ -44,26 +44,45 @@ export default function AdsManager() {
     if (!file) return;
 
     setUploading(true);
-    const storageRef = ref(storage, `ads/${Date.now()}_${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      }, 
-      (error) => {
-        console.error("Upload failed", error);
-        alert("Upload failed.");
+    
+    // Use FileReader and Canvas to compress and convert to Base64
+    // This completely bypasses Firebase Storage permissions and saves directly to Firestore
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Resize if too large
+        const MAX_WIDTH = 800;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Compress to JPEG with 0.7 quality
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setImageUrl(dataUrl);
         setUploading(false);
-      }, 
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setImageUrl(downloadURL);
+      };
+      img.onerror = () => {
+        alert("Failed to process image.");
         setUploading(false);
-        setUploadProgress(0);
-      }
-    );
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      alert("Failed to read file.");
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAddAd = async (e: React.FormEvent) => {
@@ -154,7 +173,7 @@ export default function AdsManager() {
                   disabled={uploading}
                 />
                 <div className={`h-full px-4 rounded-xl flex items-center justify-center border transition-colors ${uploading ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-800/50 border-slate-700 hover:bg-slate-800 text-white cursor-pointer'}`}>
-                  {uploading ? `${Math.round(uploadProgress)}%` : <Icons.Upload className="w-5 h-5" />}
+                  {uploading ? <Icons.Loader2 className="w-5 h-5 animate-spin" /> : <Icons.Upload className="w-5 h-5" />}
                 </div>
               </div>
             </div>
