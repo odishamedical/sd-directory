@@ -62,7 +62,7 @@ export default function DirectoryHome() {
           }
         } else {
           querySnapshot.forEach((doc) => {
-            liveListings.push({ id: doc.id, ...doc.data() } as Listing);
+            liveListings.push({ ...doc.data(), id: doc.id } as Listing);
           });
         }
         

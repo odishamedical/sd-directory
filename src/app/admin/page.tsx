@@ -309,7 +309,7 @@ export default function AdminDashboard() {
           createdAt: serverTimestamp()
         }));
 
-      const promises = cleanData.map(data => addDoc(collection(db, "listings"), data));
+      const promises = cleanData.map(data => setDoc(doc(db, "listings", data.id), data));
       
       // Add a 10-second timeout to prevent infinite hanging
       const timeoutPromise = new Promise((_, reject) => 
