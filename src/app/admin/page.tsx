@@ -100,7 +100,7 @@ export default function AdminDashboard() {
     setIsLoadingData(true);
     try {
       const snapshot = await getDocs(collection(db, "listings"));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setListings(data);
     } catch (err) {
       console.error("Failed to fetch listings:", err);
