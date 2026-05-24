@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import * as Icons from "lucide-react";
+import { db, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "../lib/firebase";
 
 interface Listing {
   id: string;
@@ -26,6 +27,45 @@ interface ListingDetailModalProps {
 }
 
 export default function ListingDetailModal({ listing, onClose, onClaim }: ListingDetailModalProps) {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [newReviewText, setNewReviewText] = useState("");
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [listing.id]);
+
+  const fetchReviews = async () => {
+    try {
+      const q = query(collection(db, `listings/${listing.id}/reviews`), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (err) {
+      console.error("Failed to load reviews", err);
+    }
+  };
+
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReviewText.trim()) return;
+    setSubmittingReview(true);
+    try {
+      await addDoc(collection(db, `listings/${listing.id}/reviews`), {
+        text: newReviewText,
+        rating: newReviewRating,
+        author: "Anonymous User", // Could be connected to SD Auth Center later
+        createdAt: serverTimestamp()
+      });
+      setNewReviewText("");
+      fetchReviews();
+    } catch (err) {
+      console.error("Failed to submit review", err);
+      alert("Failed to post review.");
+    }
+    setSubmittingReview(false);
+  };
+
   // Category-specific details helper
   const getCategoryTheme = (cat: string) => {
     const themes: Record<string, { label: string; icon: any; color: string }> = {
@@ -184,6 +224,56 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
                     <span className="truncate">{listing.website.replace(/^https?:\/\/(www\.)?/, "")}</span>
                   </a>
                 )}
+              </div>
+
+              {/* User Reviews Section */}
+              <div className="pt-6 mt-6 border-t border-slate-800">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#e5c158] mb-4">User Reviews</h4>
+                
+                {/* Review Form */}
+                <form onSubmit={submitReview} className="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6">
+                  <h5 className="text-xs text-white font-bold mb-2">Leave a Review</h5>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Icons.Star 
+                        key={star} 
+                        className={`w-5 h-5 cursor-pointer transition-colors ${star <= newReviewRating ? "text-[#e5c158] fill-current" : "text-slate-700"}`}
+                        onClick={() => setNewReviewRating(star)}
+                      />
+                    ))}
+                  </div>
+                  <textarea 
+                    value={newReviewText}
+                    onChange={(e) => setNewReviewText(e.target.value)}
+                    placeholder="Share your experience..." 
+                    rows={2} 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-[#e5c158] outline-none mb-3"
+                  />
+                  <button type="submit" disabled={submittingReview} className="px-4 py-2 bg-[#1e293b] hover:bg-[#2a3a52] text-white font-bold rounded-lg text-xs transition-colors disabled:opacity-50">
+                    {submittingReview ? "Posting..." : "Post Review"}
+                  </button>
+                </form>
+
+                {/* Review List */}
+                <div className="space-y-4">
+                  {reviews.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">No reviews yet. Be the first!</p>
+                  ) : (
+                    reviews.map((rev) => (
+                      <div key={rev.id} className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/50">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-xs font-bold text-white">{rev.author}</span>
+                          <div className="flex items-center text-[#e5c158]">
+                            {[...Array(5)].map((_, i) => (
+                              <Icons.Star key={i} className={`w-3 h-3 ${i < rev.rating ? "fill-current" : "text-slate-700"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-300">{rev.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
