@@ -10,6 +10,7 @@ interface EditListingModalProps {
 
 export default function EditListingModal({ listing, onClose, onRefresh }: EditListingModalProps) {
   const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     name: listing.name || "",
     category: listing.category || "",
@@ -73,6 +74,35 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     }));
   };
 
+  const generateDescription = async () => {
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          category: formData.category,
+          state: formData.state,
+          district: formData.district,
+          townOrBlock: formData.townOrBlock,
+          products: formData.products
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.description) {
+        setFormData(prev => ({ ...prev, description: data.description }));
+      } else {
+        alert(data.error || "Failed to generate description");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error generating description.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -118,7 +148,18 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
                 <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-[#e5c158]" />
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="text-xs text-slate-400 font-bold">Description (SEO Rich Content)</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs text-slate-400 font-bold">Description (SEO Rich Content)</label>
+                  <button 
+                    type="button" 
+                    onClick={generateDescription}
+                    disabled={isGenerating}
+                    className="text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isGenerating ? <Icons.Loader2 className="w-3 h-3 animate-spin" /> : <Icons.Sparkles className="w-3 h-3" />}
+                    {isGenerating ? "Generating..." : "Generate with AI"}
+                  </button>
+                </div>
                 <textarea 
                   name="description" 
                   value={formData.description} 
