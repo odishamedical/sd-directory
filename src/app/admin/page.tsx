@@ -290,6 +290,7 @@ export default function AdminDashboard() {
           rating: place.rating || 0,
           reviews_count: place.reviews_count || 0,
           image: place.image || "",
+          phone: place.phone || "",
           category: tagCategory || place.category || "retail",
           subCategory: tagSubcategory || "",
           country: "India",
@@ -309,7 +310,7 @@ export default function AdminDashboard() {
           createdAt: serverTimestamp()
         }));
 
-      const promises = cleanData.map(data => setDoc(doc(db, "listings", data.id), data));
+      const promises = cleanData.map(data => setDoc(doc(db, "listings", data.id), data, { merge: true }));
       
       // Add a 10-second timeout to prevent infinite hanging
       const timeoutPromise = new Promise((_, reject) => 

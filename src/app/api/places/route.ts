@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.photos"
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.photos,places.internationalPhoneNumber,places.nationalPhoneNumber"
       },
       body: JSON.stringify({
         textQuery: query
@@ -73,6 +73,7 @@ export async function GET(request: Request) {
         reviews_count: place.userRatingCount || 0,
         image: imageUrl,
         category: category,
+        phone: place.internationalPhoneNumber || place.nationalPhoneNumber || "",
         description: description,
         distance: "2.5 km", // Hardcoded mock for now, can calculate later
         is_verified: true,

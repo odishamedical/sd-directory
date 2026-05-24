@@ -226,11 +226,21 @@ export default function ListingPage() {
                 </div>
                 
                 {listing.phone && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div className="p-2 bg-slate-900 rounded-lg shrink-0 text-slate-400"><Icons.Phone className="w-5 h-5"/></div>
-                    <div>
-                      <div className="text-sm font-bold text-white">Phone</div>
-                      <a href={`tel:${listing.phone}`} className="text-sm text-[#e5c158] hover:underline">{listing.phone}</a>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-white">Phone & WhatsApp</div>
+                      <div className="flex items-center justify-between mt-1">
+                        <a href={`tel:${listing.phone}`} className="text-sm text-[#e5c158] hover:underline font-bold">{listing.phone}</a>
+                        <a 
+                          href={`https://api.whatsapp.com/send?phone=${listing.phone.replace(/\D/g,'')}&text=${encodeURIComponent("Hello! I found your listing on the Shyam Dash Directory.")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-1 rounded bg-[#25D366]/10 text-[#25D366] text-[10px] font-bold uppercase tracking-wider hover:bg-[#25D366]/20 transition-colors flex items-center gap-1"
+                        >
+                          <Icons.MessageCircle className="w-3 h-3" /> Chat
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -245,6 +255,37 @@ export default function ListingPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Share & Promote */}
+            <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-6">
+              <h3 className="font-bold text-white mb-4 border-b border-slate-800 pb-2 flex items-center gap-2">
+                <Icons.Share2 className="w-5 h-5 text-[#e5c158]" /> Share & Promote
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => {
+                    const userEmail = typeof window !== "undefined" ? localStorage.getItem("sd_current_user_email") : "";
+                    const shareUrl = `${window.location.origin}/listing/${listing.id}${userEmail ? `?ref=${encodeURIComponent(userEmail)}` : ""}`;
+                    const text = `Check out ${listing.name} on the Shyam Dash Directory!`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + shareUrl)}`, '_blank');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 font-bold text-xs transition-colors"
+                >
+                  <Icons.MessageCircle className="w-4 h-4" /> WhatsApp
+                </button>
+                <button 
+                  onClick={() => {
+                    const userEmail = typeof window !== "undefined" ? localStorage.getItem("sd_current_user_email") : "";
+                    const shareUrl = `${window.location.origin}/listing/${listing.id}${userEmail ? `?ref=${encodeURIComponent(userEmail)}` : ""}`;
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2]/20 font-bold text-xs transition-colors"
+                >
+                  <Icons.Share className="w-4 h-4" /> Facebook
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-3 text-center">Share to earn viral referral rewards!</p>
             </div>
 
           </div>
