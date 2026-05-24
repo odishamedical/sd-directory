@@ -10,7 +10,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:393346058191:web:a5e96e1c481a72f86db4ba"
 };
 
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app, "default");
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-export { app, db, collection, getDocs, getDoc, setDoc, writeBatch, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy };
+export { app, db, auth, googleProvider, collection, getDocs, getDoc, setDoc, writeBatch, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy };

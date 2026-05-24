@@ -184,8 +184,15 @@ export default function AdminDashboard() {
   const handleApproveClaim = async (claimId: string, listingId: string) => {
     if (!confirm("Approve this claim? The listing will be marked as officially claimed.")) return;
     try {
+      const claimToApprove = claims.find((c: any) => c.id === claimId);
+      const ownerId = claimToApprove?.uid || null;
+
       await updateDoc(doc(db, "claims", claimId), { status: "Approved" });
-      await updateDoc(doc(db, "listings", listingId), { is_claimed: true });
+      await updateDoc(doc(db, "listings", listingId), { 
+        is_claimed: true,
+        ownerId: ownerId,
+        ownerEmail: claimToApprove?.email || ""
+      });
       fetchClaims();
     } catch (err) {
       console.error(err);
