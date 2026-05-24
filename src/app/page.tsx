@@ -51,13 +51,11 @@ export default function DirectoryHome() {
         if (querySnapshot.empty) {
           console.log("Firestore is empty, seeding initial listings...");
           const { INITIAL_LISTINGS } = await import("../data/listings");
-          const { addDoc, serverTimestamp } = await import("../lib/firebase");
+          const { setDoc, doc, serverTimestamp } = await import("../lib/firebase");
           
           for (const listing of INITIAL_LISTINGS) {
-            // Remove the hardcoded ID so Firestore generates a new one, but keep the data
-            const { id, ...dataToSave } = listing;
-            await addDoc(collection(db, "listings"), {
-              ...dataToSave,
+            await setDoc(doc(db, "listings", listing.id), {
+              ...listing,
               createdAt: serverTimestamp()
             });
             liveListings.push(listing);
