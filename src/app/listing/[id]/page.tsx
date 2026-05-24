@@ -224,7 +224,26 @@ export default function ListingPage() {
                     <div className="text-sm text-slate-400">{listing.address || `${listing.village || ''} ${listing.area || ''}, ${listing.townOrBlock || ''}, ${listing.district || ''}, ${listing.state || ''} ${listing.pincode || ''}`}</div>
                   </div>
                 </div>
-
+                
+                {listing.phone && (
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-slate-900 rounded-lg shrink-0 text-slate-400"><Icons.Phone className="w-5 h-5"/></div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-white">Phone & WhatsApp</div>
+                      <div className="flex items-center justify-between mt-1">
+                        <a href={`tel:${listing.phone}`} className="text-sm text-[#e5c158] hover:underline font-bold">{listing.phone}</a>
+                        <a 
+                          href={`https://api.whatsapp.com/send?phone=${listing.phone.replace(/\D/g,'')}&text=${encodeURIComponent("Hello! I found your listing on the Shyam Dash Directory.")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2 py-1 rounded bg-[#25D366]/10 text-[#25D366] text-[10px] font-bold uppercase tracking-wider hover:bg-[#25D366]/20 transition-colors flex items-center gap-1"
+                        >
+                          <Icons.MessageCircle className="w-3 h-3" /> Chat
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {listing.website && (
                   <div className="flex items-center gap-3">
