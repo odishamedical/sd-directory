@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimestamp } from "../../lib/firebase";
+import { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimestamp, getDoc, writeBatch } from "../../lib/firebase";
 import * as Icons from "lucide-react";
+import TaxonomyManager from "../../components/TaxonomyManager";
+import EditListingModal from "../../components/EditListingModal";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -18,12 +20,25 @@ export default function AdminDashboard() {
   const [listings, setListings] = useState<any[]>([]);
   const [claims, setClaims] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [editingListing, setEditingListing] = useState<any | null>(null);
 
   // Importer State
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Taxonomy Tagging State
+  const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
+  const [taxonomyLocations, setTaxonomyLocations] = useState<any[]>([]);
+  const [tagCategory, setTagCategory] = useState("");
+  const [tagSubcategory, setTagSubcategory] = useState("");
+  const [tagState, setTagState] = useState("");
+  const [tagDistrict, setTagDistrict] = useState("");
+  const [tagTown, setTagTown] = useState("");
+  const [tagArea, setTagArea] = useState("");
+  const [tagStreet, setTagStreet] = useState("");
+  const [tagVillage, setTagVillage] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -66,7 +81,19 @@ export default function AdminDashboard() {
     if (!isAuthorized) return;
     if (activeTab === "listings" || activeTab === "dashboard") fetchListings();
     if (activeTab === "claims" || activeTab === "dashboard") fetchClaims();
+    if (activeTab === "importer") fetchTaxonomy();
   }, [activeTab, isAuthorized]);
+
+  const fetchTaxonomy = async () => {
+    try {
+      const catDoc = await getDoc(doc(db, "taxonomy", "categories"));
+      if (catDoc.exists()) setTaxonomyCategories(catDoc.data().data || []);
+      const locDoc = await getDoc(doc(db, "taxonomy", "locations"));
+      if (locDoc.exists()) setTaxonomyLocations(locDoc.data().data || []);
+    } catch (err) {
+      console.error("Failed to load taxonomy", err);
+    }
+  };
 
   const fetchListings = async () => {
     setIsLoadingData(true);
@@ -126,6 +153,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteAllListings = async () => {
+    if (!confirm("⚠️ WARNING: This will permanently delete ALL listings in your database. Are you absolutely sure?")) return;
+    if (prompt("Type 'DELETE ALL' to confirm:") !== "DELETE ALL") return;
+    
+    setIsLoadingData(true);
+    try {
+      // In a real production app with 10k+ docs, we'd delete in chunks. For now, batch delete.
+      const snapshot = await getDocs(collection(db, "listings"));
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      await batch.commit();
+      alert("All listings deleted successfully.");
+      fetchListings();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete all listings.");
+    }
+    setIsLoadingData(false);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -176,22 +225,30 @@ export default function AdminDashboard() {
   const handleImportAll = async () => {
     setIsImporting(true); setErrorMsg(""); setSuccessMsg("");
     try {
-      // Clean undefined values just in case
       const cleanData = searchResults.map(place => ({
-        id: place.id || "unknown",
-        name: place.name || "Unknown",
-        address: place.address || "",
-        rating: place.rating || 0,
-        reviews_count: place.reviews_count || 0,
-        image: place.image || "",
-        category: place.category || "retail",
-        description: place.description || "",
-        distance: place.distance || "",
-        is_verified: true,
-        is_claimed: false,
-        features: ["Auto-Imported", "Google Places"],
-        createdAt: serverTimestamp()
-      }));
+          id: place.id || "unknown",
+          name: place.name || "Unknown",
+          address: place.address || "",
+          rating: place.rating || 0,
+          reviews_count: place.reviews_count || 0,
+          image: place.image || "",
+          category: tagCategory || place.category || "retail",
+          subCategory: tagSubcategory || "",
+          country: "India",
+          state: tagState || "",
+          district: tagDistrict || "",
+          townOrBlock: tagTown || "",
+          area: tagArea || "",
+          street: tagStreet || "",
+          village: tagVillage || "",
+          description: place.description || "",
+          distance: place.distance || "",
+          is_verified: true,
+          is_claimed: false,
+          features: ["Auto-Imported", "Google Places"],
+          sourceQuery: searchQuery,
+          createdAt: serverTimestamp()
+        }));
 
       const promises = cleanData.map(data => addDoc(collection(db, "listings"), data));
       
@@ -252,6 +309,13 @@ export default function AdminDashboard() {
           >
             <Icons.ShieldCheck className="w-5 h-5" /> Business Claims
           </button>
+          
+          <button 
+            onClick={() => setActiveTab("taxonomy")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === "taxonomy" ? "bg-[#e5c158]/10 text-[#e5c158]" : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"}`}
+          >
+            <Icons.FolderTree className="w-5 h-5" /> Categories & Places
+          </button>
         </nav>
         
         <div className="p-4 border-t border-[#1e293b]">
@@ -296,39 +360,91 @@ export default function AdminDashboard() {
 
           {/* TAB: IMPORTER */}
           {activeTab === "importer" && (
-            <div className="animate-fadeIn max-w-3xl">
-              <h2 className="text-2xl font-black text-white mb-6">Data Importer</h2>
-              
-              {successMsg && <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-4 rounded-xl mb-6">{successMsg}</div>}
-              {errorMsg && <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl mb-6">{errorMsg}</div>}
+            <div className="animate-fadeIn space-y-12">
+              <div>
+                <h2 className="text-2xl font-black text-white mb-2">Data Importer</h2>
+                <p className="text-slate-400">Search for real businesses to automatically seed the directory.</p>
+              </div>
 
-              {/* GOOGLE PLACES AUTO-IMPORTER */}
-              <div className="bg-slate-900/50 border border-[#e5c158]/50 p-8 rounded-2xl mb-8">
-                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                  <span className="text-[#e5c158]"><Icons.Zap className="w-5 h-5 fill-current"/></span> Google Places Auto-Importer
-                </h2>
-                <p className="text-sm text-slate-400 mb-6">Search for real businesses to automatically seed the directory.</p>
+              {/* Tagging Center */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-[#e5c158] mb-4 flex items-center gap-2">
+                  <Icons.Tags className="w-5 h-5"/> Data Tagging Center
+                </h3>
+                <p className="text-slate-400 text-sm mb-6">Assign the Category and Location hierarchy BEFORE importing. Every listing in this batch will be tagged with these exact values.</p>
                 
-                <div className="flex gap-4 mb-6">
-                  <input 
-                    type="text" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="e.g., Doctors in Cuttack" 
-                    className="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none"
-                    onKeyDown={(e) => e.key === "Enter" && handleSearchPlaces()}
-                  />
-                  <button 
-                    onClick={handleSearchPlaces}
-                    disabled={isSearching || !searchQuery}
-                    className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-colors disabled:opacity-50"
-                  >
-                    {isSearching ? "Searching..." : "Search Places"}
-                  </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {/* Categorization */}
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Category *</label>
+                    <select value={tagCategory} onChange={e => setTagCategory(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none">
+                      <option value="">Select Category...</option>
+                      {taxonomyCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Subcategory</label>
+                    <input type="text" value={tagSubcategory} onChange={e => setTagSubcategory(e.target.value)} placeholder="e.g. Pediatrician" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  </div>
+                  
+                  {/* Location High Level */}
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">State</label>
+                    <select value={tagState} onChange={e => {setTagState(e.target.value); setTagDistrict("");}} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none">
+                      <option value="">Select State...</option>
+                      {taxonomyLocations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">District</label>
+                    <select value={tagDistrict} onChange={e => setTagDistrict(e.target.value)} disabled={!tagState} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none disabled:opacity-50">
+                      <option value="">Select District...</option>
+                      {taxonomyLocations.find(l => l.name === tagState)?.children.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Location Granular */}
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Town / Block</label>
+                    <input type="text" value={tagTown} onChange={e => setTagTown(e.target.value)} placeholder="e.g. Patia" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Area</label>
+                    <input type="text" value={tagArea} onChange={e => setTagArea(e.target.value)} placeholder="e.g. Unit 9" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Street</label>
+                    <input type="text" value={tagStreet} onChange={e => setTagStreet(e.target.value)} placeholder="e.g. Gaiety Talkies Rd" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Village</label>
+                    <input type="text" value={tagVillage} onChange={e => setTagVillage(e.target.value)} placeholder="e.g. Attabira" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:border-[#e5c158] outline-none" />
+                  </div>
                 </div>
 
+                <div className="flex flex-col md:flex-row gap-3 pt-6 border-t border-slate-800">
+                  <div className="flex-1 relative">
+                    <Icons.Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
+                    <input 
+                      type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Google Search e.g., Doctors in Cuttack..." 
+                      className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:border-[#e5c158] focus:ring-1 focus:ring-[#e5c158] outline-none transition-all"
+                    />
+                  </div>
+                  <button 
+                    onClick={handleSearchPlaces}
+                    disabled={isSearching || !tagCategory}
+                    className="px-8 py-4 rounded-xl bg-[#1e293b] text-white font-bold hover:bg-[#2a3a52] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {isSearching ? <Icons.Loader2 className="w-5 h-5 animate-spin" /> : "Search Places"}
+                  </button>
+                </div>
+                {!tagCategory && <p className="text-red-400 text-xs mt-2">* You must assign a Category before searching.</p>}
+
                 {searchResults.length > 0 && (
-                  <div className="space-y-4">
+                  <div className="mt-8 space-y-4">
                     <h3 className="text-sm font-bold text-[#e5c158]">Found {searchResults.length} Results</h3>
                     <div className="max-h-64 overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
                       {searchResults.map((res, idx) => (
@@ -339,7 +455,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="text-right">
                             <div className="text-xs text-[#e5c158] font-bold">{res.rating} ⭐ ({res.reviews_count})</div>
-                            <div className="text-[10px] text-slate-400 uppercase">{res.category}</div>
+                            <div className="text-[10px] text-slate-400 uppercase">{tagCategory}</div>
                           </div>
                         </div>
                       ))}
@@ -347,7 +463,7 @@ export default function AdminDashboard() {
                     <button 
                       onClick={handleImportAll}
                       disabled={isImporting}
-                      className="w-full py-3 mt-2 rounded-xl bg-gold-gradient text-slate-950 font-black uppercase tracking-widest hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-4 mt-2 rounded-xl bg-gradient-to-r from-[#996515] to-[#C5A059] text-black font-black uppercase tracking-widest hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isImporting ? "Injecting into Firebase..." : `Import All ${searchResults.length} Listings Now`}
                     </button>
@@ -408,7 +524,15 @@ export default function AdminDashboard() {
           {/* TAB: LISTINGS */}
           {activeTab === "listings" && (
             <div className="animate-fadeIn">
-              <h2 className="text-2xl font-black text-white mb-6">Manage Listings</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-black text-white">Manage Listings</h2>
+                <button 
+                  onClick={handleDeleteAllListings} 
+                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors"
+                >
+                  <Icons.Trash2 className="w-4 h-4" /> Delete All Data
+                </button>
+              </div>
               <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm text-slate-300">
@@ -445,9 +569,14 @@ export default function AdminDashboard() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-right">
-                              <button onClick={() => handleDeleteListing(lst.id)} className="text-red-400 hover:text-red-300 hover:bg-red-950/30 p-2 rounded-lg transition-colors">
-                                <Icons.Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex justify-end gap-2">
+                                <button onClick={() => setEditingListing(lst)} className="text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 p-2 rounded-lg transition-colors" title="Edit Listing">
+                                  <Icons.Edit3 className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => handleDeleteListing(lst.id)} className="text-red-400 hover:text-red-300 hover:bg-red-950/30 p-2 rounded-lg transition-colors" title="Delete Listing">
+                                  <Icons.Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -525,6 +654,18 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === "taxonomy" && (
+            <TaxonomyManager />
+          )}
+
+          {editingListing && (
+            <EditListingModal 
+              listing={editingListing} 
+              onClose={() => setEditingListing(null)} 
+              onRefresh={fetchListings} 
+            />
           )}
 
         </div>
