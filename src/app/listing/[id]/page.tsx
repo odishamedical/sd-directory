@@ -251,7 +251,7 @@ export default function ListingPage() {
       
       {showClaimModal && (
         <ClaimModal
-          listingName={listing.name}
+          listing={listing}
           onClose={() => setShowClaimModal(false)}
           onSuccess={() => {
             setShowClaimModal(false);
