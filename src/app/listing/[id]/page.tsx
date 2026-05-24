@@ -334,6 +334,23 @@ export default function ListingPage() {
               </div>
             </div>
 
+
+            {/* Google Map Location */}
+            <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-2 overflow-hidden aspect-square relative">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0, borderRadius: '0.75rem' }} 
+                loading="lazy" 
+                allowFullScreen 
+                referrerPolicy="no-referrer-when-downgrade" 
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyCqxlojiRrV5lUWbxdOGEmvpPKuKlxi3oA&q=${encodeURIComponent(`${listing.name}, ${listing.address || listing.district + ", Odisha"}`)}`}>
+              </iframe>
+              <div className="absolute top-4 right-4 z-10 bg-slate-950/90 backdrop-blur-sm border border-slate-800 rounded px-2 py-1 text-[10px] text-[#e5c158] font-bold uppercase tracking-wider">
+                Live Map
+              </div>
+            </div>
+
             {/* Share & Promote */}
             <div className="bg-[#090F1D] border border-[#1e293b] rounded-2xl p-6">
               <h3 className="font-bold text-white mb-4 border-b border-slate-800 pb-2 flex items-center gap-2">
