@@ -61,6 +61,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [ecosystemMenuOpen, setEcosystemMenuOpen] = useState(false);
   const [inviteName, setInviteName] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -158,12 +159,12 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   };
 
   const projects = [
-    { name: "Gold Hub", url: "https://sd-gold-hub.vercel.app", adminPath: "/admin" },
-    { name: "Sambalpuri Hub", url: "https://sd-bhulia-hub.vercel.app", adminPath: "/franchise/dashboard" },
-    { name: "Telemedicine", url: "https://sd-dehapa-hub.vercel.app", adminPath: "/portal" },
-    { name: "News", url: "https://sd-news-hub.vercel.app", adminPath: "/admin" },
-    { name: "Directory", url: "https://sd-directory.vercel.app", adminPath: "/admin" },
-    { name: "IT Service", url: "https://sd-it-hub-w3sk.vercel.app", adminPath: "/admin" }
+    { name: "Gold Hub",       shortName: "Gold",   icon: "💛", url: "https://sd-gold-hub.vercel.app",     adminPath: "/admin" },
+    { name: "Sambalpuri Hub", shortName: "Saree",  icon: "🧵", url: "https://sd-bhulia-hub.vercel.app",   adminPath: "/franchise/dashboard" },
+    { name: "Telemedicine",   shortName: "Health", icon: "🏥", url: "https://sd-dehapa-hub.vercel.app",   adminPath: "/portal" },
+    { name: "News",           shortName: "News",   icon: "📰", url: "https://sd-news-hub.vercel.app",     adminPath: "/admin" },
+    { name: "Directory",      shortName: "Dir",    icon: "🧭", url: "https://sd-directory.vercel.app",    adminPath: "/admin" },
+    { name: "IT Service",     shortName: "IT",     icon: "💻", url: "https://sd-it-hub-w3sk.vercel.app", adminPath: "/admin" }
   ];
 
   const getDynamicUrl = (prodUrl: string) => {
@@ -247,49 +248,50 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
           transform: translateY(0px);
           border-bottom: 1px solid #784f0e;
         }
-        .scrollbar-none::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-none {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes sdPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .sd-pulse-dot { animation: sdPulse 2s ease-in-out infinite; }
       `}} />
 
-      {/* Left branding (hidden on mobile to make room) */}
+      {/* ZONE 1: BRANDING — compact SD on mobile, full ECOSYSTEM on desktop */}
+      <a href="https://sd-auth-center.vercel.app/launcher" className="md:hidden flex items-center gap-1.5 text-[#C5A059] hover:brightness-110 transition-all shrink-0">
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <span className="text-[9px] font-black tracking-[0.15em] uppercase font-mono">SD</span>
+      </a>
       <a href="https://sd-auth-center.vercel.app/launcher" className="hidden md:flex items-center gap-2 text-[#C5A059] hover:brightness-110 transition-all shrink-0">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
         <span className="text-[10px] font-black tracking-[0.2em] uppercase font-mono">SD ECOSYSTEM</span>
         {isAdminMode && (
-          <span className="text-[8px] font-extrabold bg-[#C5A059]/20 text-[#C5A059] px-1.5 py-0.5 rounded border border-[#C5A059]/30 uppercase tracking-widest font-mono shrink-0">
-            ADMIN
-          </span>
+          <span className="text-[8px] font-extrabold bg-[#C5A059]/20 text-[#C5A059] px-1.5 py-0.5 rounded border border-[#C5A059]/30 uppercase tracking-widest font-mono shrink-0">ADMIN</span>
         )}
       </a>
 
-      {/* Project Links (Scrollable row on mobile) */}
-      <div className="flex items-center gap-1.5 md:gap-4 lg:gap-6 h-full py-1 overflow-x-auto scrollbar-none flex-nowrap whitespace-nowrap flex-1 md:flex-initial pr-2 md:pr-0">
+      {/* ZONE 2: ACTIVE PILL (mobile) / TAB ROW (desktop) */}
+      <div className="md:hidden flex-1 flex justify-center px-2 min-w-0">
+        <span className="text-[8px] font-bold uppercase tracking-widest text-[#C5A059] bg-[#C5A059]/10 border border-[#C5A059]/25 px-2.5 py-1 rounded-full flex items-center gap-1.5 shrink-0">
+          <span className="sd-pulse-dot w-1.5 h-1.5 rounded-full bg-[#C5A059] inline-block flex-shrink-0" />
+          <span className="truncate max-w-[110px]">{activeProject || "SD Ecosystem"}</span>
+        </span>
+      </div>
+      <div className="hidden md:flex items-center gap-4 lg:gap-6 h-full py-1 overflow-x-auto scrollbar-none flex-nowrap whitespace-nowrap">
         {projects.map((p) => {
           const isActive = activeProject === p.name;
           return (
-            <a 
-              key={p.name} 
-              href={getProjectUrl(p.url, p.adminPath)}
-              className={isActive 
-                ? "active-pulse-button text-[9px] md:text-[10px] uppercase tracking-widest shrink-0" 
-                : "text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-[#C5A059] uppercase tracking-widest transition-colors py-1 px-2 md:px-3 shrink-0"
-              }
-            >
-              {p.name}
-            </a>
+            <a key={p.name} href={getProjectUrl(p.url, p.adminPath)}
+              className={isActive ? "active-pulse-button text-[10px] uppercase tracking-widest shrink-0" : "text-[10px] font-bold text-gray-400 hover:text-[#C5A059] uppercase tracking-widest transition-colors py-1 px-3 shrink-0"}
+            >{p.name}</a>
           );
         })}
       </div>
 
-      {/* Right User Auth with Dropdown toggle */}
-      <div className="flex items-center gap-2 md:gap-4 relative shrink-0" ref={dropdownRef}>
+      {/* ZONE 3: USER AUTH (always visible) + HAMBURGER (mobile only) */}
+      <div className="flex items-center gap-1.5 md:gap-4 relative shrink-0" ref={dropdownRef}>
         {userEmail ? (
           <div className="relative">
             <button 
@@ -358,11 +360,87 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
             <span>Sign In</span>
           </a>
         )}
+        {/* ☰ Hamburger — mobile only, opens ecosystem project drawer */}
+        <button
+          onClick={() => setEcosystemMenuOpen(!ecosystemMenuOpen)}
+          className="md:hidden flex flex-col justify-center items-center gap-[4px] w-7 h-7 rounded focus:outline-none ml-0.5"
+          aria-label="Open SD Ecosystem menu"
+        >
+          <span className={`block h-[2px] w-4 bg-[#C5A059] rounded-full transition-all duration-200 origin-center ${ecosystemMenuOpen ? "rotate-45 translate-y-[6px]" : ""}`} />
+          <span className={`block h-[2px] w-4 bg-[#C5A059] rounded-full transition-all duration-200 ${ecosystemMenuOpen ? "opacity-0 scale-x-0" : ""}`} />
+          <span className={`block h-[2px] w-4 bg-[#C5A059] rounded-full transition-all duration-200 origin-center ${ecosystemMenuOpen ? "-rotate-45 -translate-y-[6px]" : ""}`} />
+        </button>
       </div>
     </div>
+    {/* ECOSYSTEM MOBILE DRAWER */}
+    {ecosystemMenuOpen && (
+      <div
+        className="md:hidden fixed top-[40px] left-0 right-0 bottom-0 z-[98] bg-black/60 backdrop-blur-sm"
+        onClick={() => setEcosystemMenuOpen(false)}
+      >
+        <div
+          className="bg-[#090F1D] border-b border-[#C5A059]/30 shadow-[0_8px_32px_rgba(0,0,0,0.7)]"
+          onClick={(e) => e.stopPropagation()}
+          style={{ animation: "slideDown 0.2s ease-out" }}
+        >
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A344A]">
+            <div className="flex items-center gap-2 text-[#C5A059]">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span className="text-[10px] font-black tracking-[0.2em] uppercase font-mono">SD ECOSYSTEM</span>
+            </div>
+            <button
+              onClick={() => setEcosystemMenuOpen(false)}
+              className="text-gray-400 hover:text-white transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 p-4">
+            {projects.map((p) => {
+              const isActive = activeProject === p.name;
+              return (
+                <a
+                  key={p.name}
+                  href={getProjectUrl(p.url, p.adminPath)}
+                  onClick={() => setEcosystemMenuOpen(false)}
+                  className={`flex flex-col items-center gap-2 py-4 px-2 rounded-xl border transition-all ${
+                    isActive
+                      ? "border-[#C5A059]/60 bg-[#C5A059]/10 shadow-[0_0_12px_rgba(197,160,89,0.15)]"
+                      : "border-white/10 bg-[#050B1B] hover:border-[#C5A059]/40 hover:bg-[#C5A059]/5"
+                  }`}
+                >
+                  <span className="text-2xl leading-none">{p.icon}</span>
+                  <span className={`text-[9px] font-bold uppercase tracking-widest text-center leading-tight ${isActive ? "text-[#C5A059]" : "text-gray-300"}`}>{p.name}</span>
+                  {isActive && <span className="text-[7px] font-mono text-[#C5A059]/70 uppercase tracking-widest">● Active</span>}
+                </a>
+              );
+            })}
+          </div>
+          {(userRole === "super_admin" || userRole === "admin") && (
+            <div className="px-4 pb-4 pt-1 border-t border-[#2A344A]">
+              <button
+                onClick={() => { setIsAdminMode(!isAdminMode); setEcosystemMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all ${
+                  isAdminMode ? "border-[#C5A059]/40 bg-[#C5A059]/10 text-[#C5A059]" : "border-white/10 bg-[#050B1B] text-gray-400"
+                }`}
+              >
+                <span>Admin Mode</span>
+                <span className={`text-[8px] px-2 py-0.5 rounded font-mono font-bold ${isAdminMode ? "bg-[#C5A059] text-[#090F1D]" : "bg-white/10 text-gray-400"}`}>
+                  {isAdminMode ? "ON" : "OFF"}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
     {inviteName && (
       <div className="w-full bg-gradient-to-r from-[#996515]/20 via-[#C5A059]/10 to-[#996515]/20 border-b border-[#C5A059]/30 py-2.5 text-center text-[10px] md:text-xs font-semibold text-white tracking-widest uppercase flex items-center justify-center gap-2">
-        <span>✨ Hello Mr/Ms. ${inviteName}, welcome to ${activeProject || "Shyam Dash Creation"}! We are delighted to host you. ✨</span>
+        <span>✨ Hello Mr/Ms. {inviteName}, welcome to {activeProject || "Shyam Dash Creation"}! We are delighted to host you. ✨</span>
       </div>
     )}
     </>
