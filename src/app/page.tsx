@@ -199,7 +199,7 @@ export default function DirectoryHome() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#040815] text-[#f8fafc] flex flex-col font-sans">
+    <div className="relative min-h-screen bg-[#040815] text-[#f8fafc] flex flex-col font-sans overflow-x-hidden">
       
       {/* Background Dots Mesh */}
       <div 
@@ -385,11 +385,11 @@ export default function DirectoryHome() {
           <main className="lg:col-span-9 space-y-6">
             
             {/* Header info */}
-            <div className="flex justify-between items-center px-2">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 px-2">
               <p className="text-xs text-slate-400">
                 Showing <strong className="text-white">{filteredListings.length}</strong> local listings in Odisha
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-start sm:self-auto">
                 <span className="text-[10px] text-slate-500 uppercase font-bold">Sort by:</span>
                 <select className="bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold uppercase text-[#e5c158] px-2 py-1.5 focus:outline-none">
                   <option>Promoted & Nearby</option>
