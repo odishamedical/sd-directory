@@ -13,6 +13,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [inviteName, setInviteName] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const checkAuth = () => {
@@ -39,6 +40,18 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
       setUserAvatar(localStorage.getItem("sd_current_user_avatar"));
       setUserRole(localStorage.getItem("sd_current_user_role"));
       
+      // Parse invite name and referral code
+      const invite = params.get("invite_name");
+      const refCode = params.get("ref");
+      
+      if (invite) {
+        sessionStorage.setItem("sd_invite_name", invite);
+        if (refCode) {
+          sessionStorage.setItem("sd_invite_ref", refCode);
+        }
+      }
+      setInviteName(sessionStorage.getItem("sd_invite_name"));
+
       // Auto-detect Admin Mode from pathname prefix
       const path = window.location.pathname;
       const isAd = path.startsWith("/admin") || 
@@ -89,13 +102,37 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
     { name: "IT Service", url: "https://sd-it-hub-w3sk.vercel.app", adminPath: "/admin" }
   ];
 
+  const getDynamicUrl = (prodUrl: string) => {
+    if (typeof window === "undefined") return prodUrl;
+    if (window.location.hostname !== "localhost") return prodUrl;
+    
+    if (prodUrl.includes("sd-auth-center")) return "http://localhost:3000";
+    if (prodUrl.includes("sd-gold-hub")) return "http://localhost:3001";
+    if (prodUrl.includes("sd-bhulia-hub")) return "http://localhost:3002";
+    if (prodUrl.includes("sd-dehapa-hub")) return "http://localhost:3003";
+    if (prodUrl.includes("sd-directory")) return "http://localhost:3004";
+    if (prodUrl.includes("sd-news-hub")) return "http://localhost:3005";
+    if (prodUrl.includes("sd-it-hub")) return "http://localhost:3006";
+    return prodUrl;
+  };
+
   const getAuthCenterUrl = () => {
     if (typeof window === "undefined") return "https://sd-auth-center.vercel.app";
-    return `https://sd-auth-center.vercel.app?redirect_uri=${encodeURIComponent(window.location.href)}`;
+    const authCenterBase = window.location.hostname === "localhost" 
+      ? "http://localhost:3000" 
+      : "https://sd-auth-center.vercel.app";
+    const ref = sessionStorage.getItem("sd_invite_ref") || "";
+    const inviteName = sessionStorage.getItem("sd_invite_name") || "";
+    const params = new URLSearchParams();
+    params.set("redirect_uri", window.location.href);
+    if (ref) params.set("ref", ref);
+    if (inviteName) params.set("invite_name", inviteName);
+    return `${authCenterBase}?${params.toString()}`;
   };
 
   const getProjectUrl = (baseUrl: string, adminPath: string) => {
-    const finalUrlString = isAdminMode ? (baseUrl + adminPath) : baseUrl;
+    const dynamicBase = getDynamicUrl(baseUrl);
+    const finalUrlString = isAdminMode ? (dynamicBase + adminPath) : dynamicBase;
     const url = new URL(finalUrlString);
     if (!userEmail) return url.toString();
     
@@ -111,6 +148,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   };
 
   return (
+    <>
     <div className="flex w-full h-[40px] bg-[#090F1D] border-b border-[#C5A059]/20 items-center justify-between px-3 md:px-6 font-sans sticky top-0 z-[100]">
       {/* Dynamic inline styles for 3D button, pulse effect, and scrollbar removal */}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -256,5 +294,11 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
         )}
       </div>
     </div>
+    {inviteName && (
+      <div className="w-full bg-gradient-to-r from-[#996515]/20 via-[#C5A059]/10 to-[#996515]/20 border-b border-[#C5A059]/30 py-2.5 text-center text-[10px] md:text-xs font-semibold text-white tracking-widest uppercase flex items-center justify-center gap-2">
+        <span>✨ Hello Mr/Ms. ${inviteName}, welcome to ${activeProject || "Shyam Dash Creation"}! We are delighted to host you. ✨</span>
+      </div>
+    )}
+    </>
   );
 }
