@@ -29,7 +29,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen bg-[#040815] text-[#f8fafc] flex flex-col font-sans">
+      <body className="min-h-screen bg-[#040815] text-[#f8fafc] flex flex-col font-sans overflow-x-hidden">
         <AuthProvider>
           <GlobalHeader activeProject="Directory" />
           {children}

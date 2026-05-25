@@ -6,6 +6,8 @@ import * as Icons from "lucide-react";
 import MapPreview from "../components/MapPreview";
 import ClaimModal from "../components/ClaimModal";
 import Header from "../components/Header";
+import DirectoryCard from "../components/DirectoryCard";
+import MobileBottomNav from "../components/MobileBottomNav";
 import { Listing } from "../data/listings";
 import EcosystemSwitcher from "../components/EcosystemSwitcher";
 import { db, collection, getDocs, query, orderBy, getDoc, doc } from "../lib/firebase";
@@ -229,49 +231,80 @@ export default function DirectoryHome() {
           </p>
 
           {/* Search bar */}
-          <div className="w-full max-w-2xl relative mb-6">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Icons.Search className="h-5 w-5 text-slate-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search stores, jewelry, handlooms, doctors across Odisha..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-4 pl-12 pr-28 bg-slate-900/60 border border-[rgba(229,193,88,0.3)] rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-[#e5c158] focus:ring-1 focus:ring-[#e5c158] backdrop-blur-md transition-all shadow-[0_0_20px_rgba(229,193,88,0.15)] hover:shadow-[0_0_30px_rgba(229,193,88,0.25)]"
-            />
-            <div className="absolute inset-y-2 right-2 flex items-center">
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery("")} 
-                  className="p-1.5 text-slate-500 hover:text-slate-200 mr-2 rounded-lg"
-                >
-                  <Icons.X className="w-4 h-4" />
-                </button>
-              )}
-              <button className="px-5 h-full bg-gold-gradient text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-md">
-                Search
+          <div className="w-full max-w-4xl relative mb-10 flex flex-col md:flex-row gap-4 items-center">
+            
+            {/* Desktop / Responsive Unified Search Bar */}
+            <div className="w-full flex items-center bg-[#0A101D] border border-[#E5C158] rounded-2xl p-1.5 shadow-[0_0_15px_rgba(229,193,88,0.15)]">
+              <Icons.Search className="w-5 h-5 text-[#94A3B8] ml-4 md:hidden" />
+              <input 
+                type="text" 
+                placeholder="Find local businesses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent border-none text-[#E2E8F0] placeholder-[#64748B] px-4 py-3 focus:outline-none focus:ring-0 text-sm md:text-base"
+              />
+              
+              {/* Mobile Right Icons (Filter & Location) hidden on desktop */}
+              <div className="flex items-center gap-3 pr-3 md:hidden border-l border-white/10 pl-3">
+                <Icons.SlidersHorizontal className="w-5 h-5 text-[#94A3B8]" />
+                <Icons.MapPin className="w-5 h-5 text-[#94A3B8]" />
+              </div>
+
+              {/* Desktop Search Button */}
+              <button className="hidden md:flex bg-gradient-to-b from-[#F6D365] to-[#D5A021] w-12 h-12 rounded-xl items-center justify-center shrink-0 shadow-[0_0_15px_rgba(229,193,88,0.2)]">
+                <Icons.Search className="w-5 h-5 text-[#1A1A1A]" />
               </button>
+
+              {/* Desktop Location Dropdown */}
+              <div className="hidden md:flex items-center gap-2 bg-[#1C2438] border border-[#E5C158]/30 rounded-xl px-4 h-12 ml-2 shrink-0 cursor-pointer">
+                <Icons.MapPin className="w-4 h-4 text-[#E5C158]" />
+                <span className="text-[#E2E8F0] text-sm">Bhubaneswar, OD</span>
+                <Icons.ChevronDown className="w-4 h-4 text-[#E5C158] ml-2" />
+              </div>
             </div>
+
           </div>
 
-          {/* Categories Tab pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 max-w-3xl">
-            <button 
-              onClick={() => setSelectedTab("All")}
-              className={tabClass("All")}
-            >
-              All Listings
-            </button>
-            {taxonomyCategories.map((tab) => (
+          {/* Categories Tab pills (Desktop) / Glowing Icons (Mobile) */}
+          <div className="w-full">
+            {/* Mobile Categories (Horizontal Scroll) */}
+            <div className="flex md:hidden gap-5 overflow-x-auto no-scrollbar pb-4 px-2 w-[calc(100vw-32px)]">
+               {taxonomyCategories.map((tab) => {
+                 const isActive = selectedTab === tab.name;
+                 return (
+                   <div key={tab.id} onClick={() => setSelectedTab(tab.name)} className="flex flex-col items-center gap-2 cursor-pointer shrink-0">
+                     <div className={`w-[60px] h-[60px] rounded-[16px] flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-gradient-to-b from-[#F6D365] to-[#D5A021] shadow-[0_0_20px_#E5C158] border border-[#E5C158]' : 'bg-gradient-to-b from-[#E5C158]/20 to-transparent border border-[#E5C158]/40 shadow-[0_0_15px_rgba(229,193,88,0.2)]'}`}>
+                       <Icons.Store className={`w-6 h-6 ${isActive ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]'}`} />
+                     </div>
+                     <span className={`text-[12px] font-medium ${isActive ? 'text-white' : 'text-[#94A3B8]'}`}>{tab.name}</span>
+                   </div>
+                 );
+               })}
+            </div>
+
+            {/* Desktop Categories (Pills) */}
+            <div className="hidden md:flex flex-wrap items-center justify-center gap-4">
               <button 
-                key={tab.id} 
-                onClick={() => setSelectedTab(tab.name)}
-                className={tabClass(tab.name)}
+                onClick={() => setSelectedTab("All")}
+                className={`px-5 py-2.5 rounded-full border flex items-center gap-2 text-[15px] font-medium transition-all ${selectedTab === "All" ? 'border-[#E5C158] text-[#E5C158] shadow-[0_0_15px_rgba(229,193,88,0.2)]' : 'border-white/10 text-[#E2E8F0] hover:border-[#E5C158]/50 hover:text-white'}`}
               >
-                {tab.name}
+                <Icons.LayoutGrid className="w-4 h-4" />
+                All
               </button>
-            ))}
+              {taxonomyCategories.map((tab) => {
+                const isActive = selectedTab === tab.name;
+                return (
+                  <button 
+                    key={tab.id} 
+                    onClick={() => setSelectedTab(tab.name)}
+                    className={`px-5 py-2.5 rounded-full border flex items-center gap-2 text-[15px] font-medium transition-all ${isActive ? 'border-[#E5C158] text-[#E5C158] shadow-[0_0_15px_rgba(229,193,88,0.2)]' : 'border-white/10 text-[#E2E8F0] hover:border-[#E5C158]/50 hover:text-white'}`}
+                  >
+                    <Icons.Tag className="w-4 h-4" />
+                    {tab.name}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
         </div>
@@ -423,100 +456,21 @@ export default function DirectoryHome() {
                       )}
                       
                       <div 
-                      key={lst.id}
-                      onClick={() => router.push(`/listing/${lst.id}`)}
-                      className={`glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer group shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ${lst.is_featured ? 'border-2 border-[#e5c158] shadow-[0_0_15px_rgba(229,193,88,0.3)]' : ''}`}
-                    >
-                      
-                      {/* Photo Header */}
-                      <div className="relative h-44 bg-slate-950 w-full overflow-hidden border-b border-slate-900">
-                        <img 
-                          src={lst.image} 
-                          alt={lst.name} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        key={lst.id}
+                        onClick={() => router.push(`/listing/${lst.id}`)}
+                        className="cursor-pointer"
+                      >
+                        <DirectoryCard 
+                          id={lst.id}
+                          title={lst.name}
+                          category={lst.category}
+                          rating={lst.rating}
+                          reviewsCount={lst.reviews_count}
+                          distanceOrAddress={lst.distance}
+                          image={lst.image}
+                          isClaimed={lst.is_claimed}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#040815]/90 via-transparent to-transparent" />
-                        
-                        {lst.is_featured && (
-                          <div className="absolute top-3 left-3 bg-gradient-to-r from-[#e5c158] to-[#996515] text-black font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                            <Icons.Star className="w-3 h-3 fill-current" /> Featured
-                          </div>
-                        )}
-                        
-                        {/* Wishlist Heart Toggle */}
-                        <button 
-                          onClick={(e) => toggleWishlist(lst.id, e)}
-                          className="absolute top-3 right-3 p-2 rounded-xl bg-slate-950/60 hover:bg-slate-950 border border-slate-800/80 backdrop-blur-sm transition-colors text-slate-400 hover:text-rose-500 cursor-pointer"
-                        >
-                          <Icons.Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-500 text-rose-500" : ""}`} />
-                        </button>
-
-                        {/* Google Rating overlay */}
-                        <div className="absolute bottom-3 left-3 bg-[#e5c158]/95 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-md flex items-center gap-1 shadow-md">
-                          <Icons.Star className="w-3 h-3 fill-current" />
-                          <span>{lst.rating} ({lst.reviews_count})</span>
-                        </div>
                       </div>
-
-                      {/* Content Info */}
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        
-                        <div>
-                          {/* Name Block */}
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <h3 className="text-base font-extrabold text-white font-serif line-clamp-1 group-hover:text-[#e5c158] transition-colors">
-                              {lst.name}
-                            </h3>
-                            {lst.is_claimed && (
-                              <div className="w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 mt-0.5" title="SD Verified Listing">
-                                <Icons.Check className="w-3 h-3" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Address / Distance */}
-                          <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-4">
-                            <Icons.MapPin className="w-3.5 h-3.5 text-[#e5c158] shrink-0" />
-                            <span className="truncate">{lst.address.split(",")[0]}, Odisha</span>
-                            <span className="text-slate-600">•</span>
-                            <span className="text-[#e5c158] font-bold shrink-0">{lst.distance}</span>
-                          </div>
-
-                          {/* Description Snippet */}
-                          <p className="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-2">
-                            {lst.description}
-                          </p>
-                        </div>
-
-                        {/* CTA Buttons */}
-                        <div className="space-y-2 pt-3 border-t border-slate-900/60">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/listing/${lst.id}`);
-                            }}
-                            className="w-full py-2.5 rounded-xl border border-slate-700 hover:border-slate-400 bg-slate-950/20 hover:bg-slate-900/60 text-slate-300 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
-                          >
-                            View Details
-                          </button>
-                          
-                          {/* Only show Claim if it has an owner but isn't claimed yet (Mock Logic) */}
-                          {!lst.is_claimed && (
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveClaimListing(lst);
-                              }}
-                              className="w-full py-2.5 rounded-xl border border-[#e5c158]/50 hover:border-[#e5c158] bg-[#e5c158]/10 hover:bg-[#e5c158]/20 text-[#e5c158] font-bold text-xs uppercase tracking-wider transition-colors"
-                            >
-                              Claim this Listing
-                            </button>
-                          )}
-                        </div>
-
-                      </div>
-
-                    </div>
                     </React.Fragment>
                   );
                 })}
@@ -563,14 +517,8 @@ export default function DirectoryHome() {
         />
       )}
 
-      {/* Floating Mobile Filter Button */}
-      <button 
-        onClick={() => setIsMobileFilterOpen(true)}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 lg:hidden flex items-center gap-2 px-6 py-3 bg-gold-gradient text-slate-950 font-black rounded-full shadow-[0_8px_30px_rgba(229,193,88,0.4)] hover:scale-105 transition-transform"
-      >
-        <Icons.SlidersHorizontal className="w-4 h-4" />
-        FILTERS
-      </button>
+      {/* Mobile Bottom Navigation (Hidden on Desktop) */}
+      <MobileBottomNav />
 
     </div>
   );

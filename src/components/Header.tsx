@@ -30,42 +30,41 @@ export default function Header() {
   const activeUser = firebaseUser || ssoUser;
 
   return (
-    <header className="sticky top-2 z-40 w-full px-4 sm:px-6">
-      <div className="max-w-[1400px] mx-auto glass-panel border border-[rgba(229,193,88,0.18)] rounded-2xl px-6 py-4 flex items-center justify-between backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] bg-[#090F1D]/80">
+    <header className="sticky top-0 z-40 w-full bg-[#0A101D] border-b border-white/5 py-4 px-6 md:px-12 hidden md:block">
+      <div className="max-w-[1400px] mx-auto flex items-center justify-between">
         
         {/* Logo Brand */}
-        <a href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold-gradient p-[1px]">
-            <div className="w-full h-full bg-[#060c18] rounded-xl flex items-center justify-center">
-              <Icons.Compass className="w-5 h-5 text-[#e5c158]" />
-            </div>
-          </div>
-          <div>
-            <span className="text-sm font-black tracking-tight text-white block font-serif">SHYAM DASH</span>
-            <span className="text-[10px] text-[#e5c158] tracking-widest uppercase block -mt-1 font-bold">DIRECTORY</span>
-          </div>
+        <a href="/" className="text-[#E5C158] font-bold text-xl tracking-wider">
+          SD DIRECTORY
         </a>
 
-        {/* Local Navigation Badge / Info */}
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider text-[#e5c158] bg-[#e5c158]/5 border border-[#e5c158]/20">
-            Odisha Artisan & Business Index
-          </span>
-        </div>
+        {/* Center Navigation */}
+        <nav className="hidden lg:flex items-center gap-10 text-[15px] font-medium text-[#E2E8F0]">
+          <a href="#" className="hover:text-[#E5C158] transition-colors">Explore</a>
+          <a href="#" className="hover:text-[#E5C158] transition-colors">Near Me</a>
+          <a href="#" className="hover:text-[#E5C158] transition-colors">Search</a>
+        </nav>
 
-        {/* Action button */}
-        <div className="flex items-center gap-3">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-8">
           {loading && !activeUser ? (
-            <div className="w-6 h-6 rounded-full border-2 border-[#e5c158]/20 border-t-[#e5c158] animate-spin" />
+            <div className="w-5 h-5 rounded-full border-2 border-[#E5C158]/20 border-t-[#E5C158] animate-spin" />
           ) : activeUser ? (
-            <a 
-              href="/dashboard"
-              className="px-4 py-1.5 rounded-lg bg-gold-gradient text-slate-950 font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center gap-2"
-            >
-              <Icons.LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
+            <a href="/dashboard" className="text-[15px] font-medium text-[#E2E8F0] hover:text-[#E5C158] transition-colors">
+              Dashboard
             </a>
-          ) : null}
+          ) : (
+            <a href="/login" className="text-[15px] font-medium text-[#E2E8F0] hover:text-[#E5C158] transition-colors">
+              Login
+            </a>
+          )}
+          
+          <a 
+            href="/list-business"
+            className="bg-gradient-to-b from-[#F6D365] to-[#D5A021] text-[#1A1A1A] font-bold text-[15px] px-6 py-2.5 rounded-xl shadow-[0_0_20px_rgba(229,193,88,0.2)] hover:shadow-[0_0_30px_rgba(229,193,88,0.4)] transition-all"
+          >
+            List Your Business
+          </a>
         </div>
 
       </div>
