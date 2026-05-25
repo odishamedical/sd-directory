@@ -1,6 +1,54 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBz0OIk4xmOZras83es5HmJc03Ae60sMg8",
+  authDomain: "sd-auth-center.firebaseapp.com",
+  projectId: "sd-auth-center",
+  storageBucket: "sd-auth-center.firebasestorage.app",
+  messagingSenderId: "393346058191",
+  appId: "1:393346058191:web:a5e96e1c481a72f86db4ba"
+};
+
+const logReferralTraffic = async (referrerId: string, inviteName: string, originHub: string) => {
+  try {
+    let geo = { ip: "unknown", city: "unknown", region: "unknown", country: "unknown" };
+    try {
+      const geoRes = await fetch("https://ipapi.co/json/");
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        geo = {
+          ip: geoData.ip || "unknown",
+          city: geoData.city || "unknown",
+          region: geoData.region || "unknown",
+          country: geoData.country_name || "unknown"
+        };
+      }
+    } catch (e) {
+      console.warn("GeoIP lookup failed, recording fallback...", e);
+    }
+
+    const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    const db = getFirestore(app, "default");
+    
+    await addDoc(collection(db, "referral_traffic"), {
+      referrerId,
+      inviteName,
+      ip: geo.ip,
+      city: geo.city,
+      region: geo.region,
+      country: geo.country,
+      originHub,
+      timestamp: new Date().toISOString()
+    });
+    console.log("Logged referral traffic successfully.");
+  } catch (err) {
+    console.error("Error logging referral traffic to Firestore:", err);
+  }
+};
 
 interface GlobalHeaderProps {
   activeProject?: "Gold Hub" | "Sambalpuri Hub" | "Telemedicine" | "News" | "Directory" | "IT Service";
@@ -24,12 +72,14 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
       const ssoName = params.get("sso_name");
       const ssoAvatar = params.get("sso_avatar");
       const ssoRole = params.get("sso_role");
+      const ssoProfileComplete = params.get("sso_profile_complete");
 
       if (ssoEmail) {
         localStorage.setItem("sd_current_user_email", ssoEmail);
         if (ssoName) localStorage.setItem("sd_current_user_name", ssoName);
         if (ssoAvatar) localStorage.setItem("sd_current_user_avatar", ssoAvatar);
         if (ssoRole) localStorage.setItem("sd_current_user_role", ssoRole);
+        if (ssoProfileComplete) localStorage.setItem("sd_current_user_profile_complete", ssoProfileComplete);
         
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
@@ -50,6 +100,19 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
           sessionStorage.setItem("sd_invite_ref", refCode);
         }
       }
+      
+      if (refCode) {
+        sessionStorage.setItem("sd_invite_ref", refCode);
+        localStorage.setItem("sd_referral_id", refCode);
+        
+        // Log referral traffic
+        const hasLoggedVisit = sessionStorage.getItem(`sd_logged_visit_${refCode}`);
+        if (!hasLoggedVisit) {
+          sessionStorage.setItem(`sd_logged_visit_${refCode}`, "true");
+          logReferralTraffic(refCode, invite || "Guest", activeProject || "Unknown Hub");
+        }
+      }
+
       setInviteName(sessionStorage.getItem("sd_invite_name"));
 
       // Auto-detect Admin Mode from pathname prefix
@@ -87,6 +150,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
       localStorage.removeItem("sd_current_user_avatar");
       localStorage.removeItem("sd_current_user_role");
       localStorage.removeItem("sd_current_user_uid");
+      localStorage.removeItem("sd_current_user_profile_complete");
       checkAuth();
       window.dispatchEvent(new Event("sd_auth_change"));
       window.location.reload();
@@ -143,6 +207,8 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
     if (typeof window !== "undefined") {
       const role = localStorage.getItem("sd_current_user_role");
       if (role) url.searchParams.set("sso_role", role);
+      const profileComplete = localStorage.getItem("sd_current_user_profile_complete");
+      if (profileComplete) url.searchParams.set("sso_profile_complete", profileComplete);
     }
     return url.toString();
   };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as Icons from "lucide-react";
 import { db, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "../lib/firebase";
+import ProfileBlockerModal from "./ProfileBlockerModal";
 
 interface Listing {
   id: string;
@@ -31,6 +32,7 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
   const [newReviewText, setNewReviewText] = useState("");
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [showProfileBlocker, setShowProfileBlocker] = useState(false);
 
   useEffect(() => {
     fetchReviews();
@@ -49,12 +51,22 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReviewText.trim()) return;
+    
+    const userEmail = localStorage.getItem("sd_current_user_email");
+    const isProfileComplete = localStorage.getItem("sd_current_user_profile_complete") === "true";
+
+    if (!userEmail || !isProfileComplete) {
+      setShowProfileBlocker(true);
+      return;
+    }
+
     setSubmittingReview(true);
     try {
+      const userName = localStorage.getItem("sd_current_user_name") || "Verified User";
       await addDoc(collection(db, `listings/${listing.id}/reviews`), {
         text: newReviewText,
         rating: newReviewRating,
-        author: "Anonymous User", // Could be connected to SD Auth Center later
+        author: userName,
         createdAt: serverTimestamp()
       });
       setNewReviewText("");
@@ -325,6 +337,9 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
         </div>
 
       </div>
+      {showProfileBlocker && (
+        <ProfileBlockerModal onClose={() => setShowProfileBlocker(false)} />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as Icons from "lucide-react";
 import { db, addDoc, collection, serverTimestamp } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import ProfileBlockerModal from "./ProfileBlockerModal";
 
 interface ClaimModalProps {
   listing: {
@@ -17,6 +18,7 @@ interface ClaimModalProps {
 export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalProps) {
   const { user, loginWithGoogle } = useAuth();
   const [step, setStep] = useState(0); // Step 0 is Auth Check
+  const [showProfileBlocker, setShowProfileBlocker] = useState(false);
   
   const [website, setWebsite] = useState("");
   const [ownerName, setOwnerName] = useState("");
@@ -38,9 +40,14 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
 
   useEffect(() => {
     if (user && step === 0) {
-      setStep(1);
-      setOwnerName(user.displayName || "");
-      setEmail(user.email || "");
+      const isComplete = localStorage.getItem("sd_current_user_profile_complete") === "true";
+      if (!isComplete) {
+        setShowProfileBlocker(true);
+      } else {
+        setStep(1);
+        setOwnerName(user.displayName || "");
+        setEmail(user.email || "");
+      }
     }
   }, [user, step]);
 
@@ -107,6 +114,10 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
     };
     return map[cat] || cat;
   };
+
+  if (showProfileBlocker) {
+    return <ProfileBlockerModal onClose={onClose} />;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
