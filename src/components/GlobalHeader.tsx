@@ -375,7 +375,7 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
     {/* ECOSYSTEM MOBILE DRAWER */}
     {ecosystemMenuOpen && (
       <div
-        className="md:hidden fixed top-[40px] left-0 right-0 bottom-0 z-[98] bg-black/60 backdrop-blur-sm"
+        className="md:hidden fixed top-[40px] left-0 right-0 bottom-0 z-[9999] bg-[#090F1D] overflow-y-auto"
         onClick={() => setEcosystemMenuOpen(false)}
       >
         <div
@@ -407,15 +407,15 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
                   key={p.name}
                   href={getProjectUrl(p.url, p.adminPath)}
                   onClick={() => setEcosystemMenuOpen(false)}
-                  className={`flex flex-col items-center gap-2 py-4 px-2 rounded-xl border transition-all ${
+                  className={`flex flex-col items-center gap-2 py-4 px-1 rounded-xl border transition-all min-w-0 ${
                     isActive
                       ? "border-[#C5A059]/60 bg-[#C5A059]/10 shadow-[0_0_12px_rgba(197,160,89,0.15)]"
                       : "border-white/10 bg-[#050B1B] hover:border-[#C5A059]/40 hover:bg-[#C5A059]/5"
                   }`}
                 >
-                  <span className="text-2xl leading-none">{p.icon}</span>
-                  <span className={`text-[9px] font-bold uppercase tracking-widest text-center leading-tight ${isActive ? "text-[#C5A059]" : "text-gray-300"}`}>{p.name}</span>
-                  {isActive && <span className="text-[7px] font-mono text-[#C5A059]/70 uppercase tracking-widest">● Active</span>}
+                  <span className="text-2xl leading-none shrink-0">{p.icon}</span>
+                  <span className={`text-[9px] font-bold uppercase tracking-widest text-center leading-tight w-full px-1 break-words ${isActive ? "text-[#C5A059]" : "text-gray-300"}`}>{p.name}</span>
+                  {isActive && <span className="text-[7px] font-mono text-[#C5A059]/70 uppercase tracking-widest shrink-0">● Active</span>}
                 </a>
               );
             })}
