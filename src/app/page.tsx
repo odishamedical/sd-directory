@@ -256,10 +256,21 @@ export default function DirectoryHome() {
               </button>
 
               {/* Desktop Location Dropdown */}
-              <div className="hidden md:flex items-center gap-2 bg-[#1C2438] border border-[#E5C158]/30 rounded-xl px-4 h-12 ml-2 shrink-0 cursor-pointer">
-                <Icons.MapPin className="w-4 h-4 text-[#E5C158]" />
-                <span className="text-[#E2E8F0] text-sm">Bhubaneswar, OD</span>
-                <Icons.ChevronDown className="w-4 h-4 text-[#E5C158] ml-2" />
+              <div className="hidden md:flex items-center gap-2 bg-[#1C2438] border border-[#E5C158]/30 rounded-xl px-2 h-12 ml-2 shrink-0 relative">
+                <Icons.MapPin className="w-4 h-4 text-[#E5C158] ml-2 pointer-events-none" />
+                <select 
+                  value={selectedLocations[0] || ""}
+                  onChange={(e) => setSelectedLocations(e.target.value ? [e.target.value] : [])}
+                  className="bg-transparent border-none text-[#E2E8F0] text-sm focus:outline-none focus:ring-0 cursor-pointer appearance-none pr-8 pl-1 w-[140px]"
+                >
+                  <option value="" className="bg-[#1C2438]">All Odisha</option>
+                  {taxonomyLocations.flatMap((state: any) => state.children || []).map((loc: any) => (
+                    <option key={loc.id} value={loc.name} className="bg-[#1C2438]">
+                      {loc.name}, OD
+                    </option>
+                  ))}
+                </select>
+                <Icons.ChevronDown className="w-4 h-4 text-[#E5C158] absolute right-3 pointer-events-none" />
               </div>
             </div>
 
