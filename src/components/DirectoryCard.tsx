@@ -27,101 +27,107 @@ export default function DirectoryCard({
   image,
   priceLevel = "$$",
   isClaimed = false,
-  isVerified = true,
+  isVerified = false,
   features = [],
   onWishlistToggle,
   isWishlisted = false,
 }: DirectoryCardProps) {
+  // Only show Claimed+Verified badge when listing has been claimed
+  const showClaimedBadge = isClaimed;
+
   return (
-    <div className="bg-gradient-to-b from-[#0A1128] to-[#040815] rounded-3xl p-3 sm:p-4.5 flex flex-col justify-between border border-slate-800/80 hover:border-[#E5C158]/55 hover:shadow-[0_0_25px_rgba(229,193,88,0.12)] transition-all duration-500 group h-full relative overflow-hidden select-none">
-      
-      {/* Decorative Gold Poster Flare */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-[#E5C158]/5 blur-2xl rounded-full pointer-events-none group-hover:bg-[#E5C158]/10 transition-colors duration-500" />
-      
-      <div className="flex flex-col gap-3">
-        
-        {/* Poster Image Container */}
-        <div className="w-full aspect-[4/3] sm:aspect-[1.4] rounded-2xl overflow-hidden relative border border-white/5 bg-slate-950 shadow-md">
-          <img 
-            src={image} 
-            alt={title} 
+    <div className="bg-[#1A1410] rounded-3xl flex flex-col justify-between border border-[#2E2016]/80 hover:border-[#D4A843]/50 hover:shadow-[0_0_30px_rgba(212,168,67,0.14)] transition-all duration-500 group h-full relative overflow-hidden select-none shadow-lg">
+
+      {/* Warm editorial top glow */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4A843]/30 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      <div className="flex flex-col gap-0">
+
+        {/* Poster Image Container — full bleed, no padding */}
+        <div className="w-full aspect-[4/3] rounded-t-3xl overflow-hidden relative bg-[#0D0B08]">
+          <img
+            src={image}
+            alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
-          
-          {/* Ambient Overlay for contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-          {/* Floating Verification Tag */}
-          {isVerified && (
-            <div className="absolute top-3 left-3 bg-[#E5C158] text-[#040815] px-2 py-0.5 rounded-lg border border-[#E5C158]/30 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 shadow-md">
-              <Icons.ShieldCheck className="w-3 h-3 fill-[#040815] stroke-none" />
-              <span>Verified</span>
+          {/* Cinematic gradient overlay — stronger at bottom for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1410] via-[#1A1410]/20 to-transparent" />
+
+          {/* CLAIMED badge — top left, only when claimed */}
+          {showClaimedBadge && (
+            <div className="absolute top-3 left-3 bg-[#D4A843] text-[#0D0B08] px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-1 shadow-lg">
+              <Icons.BadgeCheck className="w-3 h-3" />
+              <span>Claimed</span>
             </div>
           )}
 
-          {/* Wishlist Heart Icon */}
+          {/* Wishlist heart — top right */}
           {onWishlistToggle && (
             <button
-              onClick={(e) => onWishlistToggle(id, e)}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#040815]/80 backdrop-blur-md border border-white/10 hover:border-[#E5C158]/35 flex items-center justify-center transition-all active:scale-90"
+              onClick={(e) => { e.stopPropagation(); onWishlistToggle(id, e); }}
+              className={`absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-md border flex items-center justify-center transition-all active:scale-90 ${
+                isWishlisted
+                  ? "bg-red-500/20 border-red-500/50"
+                  : "bg-[#0D0B08]/70 border-white/10 hover:border-[#D4A843]/40"
+              }`}
             >
-              <Icons.Heart className={`w-4 h-4 transition-colors ${isWishlisted ? "text-red-500 fill-red-500" : "text-slate-400 group-hover:text-white"}`} />
+              <Icons.Heart className={`w-4 h-4 transition-colors ${isWishlisted ? "text-red-400 fill-red-400" : "text-[#8A7A65]"}`} />
             </button>
           )}
 
-          {/* Rating Badge - Promoted Style */}
-          <div className="absolute bottom-3 right-3 bg-gradient-to-r from-[#F6D365]/90 to-[#D5A021]/90 text-slate-950 px-2 py-0.5 rounded-lg font-black text-[10px] flex items-center gap-1 shadow-md">
-            <Icons.Star className="w-3 h-3 fill-slate-950 stroke-none" />
+          {/* Rating badge — bottom right, overlaid on image */}
+          <div className="absolute bottom-3 right-3 bg-[#D4A843] text-[#0D0B08] px-2 py-1 rounded-xl font-black text-[10px] flex items-center gap-1 shadow-lg">
+            <Icons.Star className="w-3 h-3 fill-[#0D0B08] stroke-none" />
             <span>{rating.toFixed(1)}</span>
           </div>
         </div>
 
-        {/* Poster Content details */}
-        <div className="space-y-2">
-          
-          {/* Category Tag */}
-          <div className="flex justify-between items-center">
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-[#E5C158] font-black">
+        {/* Card content — tight, editorial-style */}
+        <div className="px-3 pt-3 pb-0 space-y-1.5">
+
+          {/* Category + price row */}
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-[#D4A843] font-black">
               {category.replace("_", " ")}
             </span>
-            <span className="text-[10px] font-extrabold text-slate-400">{priceLevel}</span>
+            <span className="text-[9px] font-bold text-[#6B5B45]">{priceLevel}</span>
           </div>
-          
-          {/* Title */}
-          <h3 className="text-white font-extrabold text-[15px] sm:text-[17px] leading-tight tracking-tight group-hover:text-[#E5C158] transition-colors duration-300 line-clamp-2 min-h-[2.5rem]">
+
+          {/* Title — editorial bold */}
+          <h3 className="text-[#F0E6D3] font-extrabold text-[14px] sm:text-[15px] leading-snug tracking-tight line-clamp-2 min-h-[2.4rem] group-hover:text-[#D4A843] transition-colors duration-300">
             {title}
           </h3>
 
-          {/* Location Badge */}
-          <div className="flex items-center text-slate-400 text-[11px] gap-1">
-            <Icons.MapPin className="w-3.5 h-3.5 text-[#E5C158] shrink-0" />
+          {/* Location */}
+          <div className="flex items-center gap-1.5 text-[#8A7A65] text-[10px]">
+            <Icons.MapPin className="w-3 h-3 text-[#D4A843] shrink-0" />
             <span className="truncate font-medium">{distanceOrAddress}</span>
           </div>
 
-          {/* Highlight Key features - dynamic list */}
+          {/* Feature tags */}
           {features && features.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="flex flex-wrap gap-1 pt-0.5">
               {features.slice(0, 2).map((feat, idx) => (
-                <span 
-                  key={idx} 
-                  className="text-[8px] sm:text-[9px] bg-slate-900/80 border border-slate-800/80 text-slate-300 px-2 py-0.5 rounded-lg font-semibold tracking-wide"
+                <span
+                  key={idx}
+                  className="text-[8px] bg-[#2A1E10] border border-[#3D2D18] text-[#B89A6A] px-2 py-0.5 rounded-lg font-semibold"
                 >
                   {feat}
                 </span>
               ))}
             </div>
           )}
-
         </div>
       </div>
 
-      {/* Action buttons footer */}
-      <div className="flex gap-2.5 mt-4 pt-3.5 border-t border-slate-900/60">
-        <button className="flex-1 bg-gradient-to-b from-[#F6D365] to-[#D5A021] hover:from-white hover:to-[#E5C158] text-slate-950 font-black text-xs py-2.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(229,193,88,0.15)] hover:shadow-[0_6px_20px_rgba(229,193,88,0.25)] active:scale-95">
-          {isClaimed ? "Details" : "Claim Business"}
+      {/* Action buttons */}
+      <div className="flex gap-2 p-3 mt-2 border-t border-[#2E2016]/60">
+        <button className="flex-1 bg-[#D4A843] hover:bg-[#E8BC55] text-[#0D0B08] font-black text-[11px] py-2.5 rounded-xl transition-all shadow-[0_4px_12px_rgba(212,168,67,0.2)] hover:shadow-[0_6px_20px_rgba(212,168,67,0.35)] active:scale-95">
+          {isClaimed ? "View Details" : "Claim Business"}
         </button>
-        <button className="w-10 h-10 shrink-0 bg-slate-900/80 hover:bg-slate-800 text-white rounded-xl flex items-center justify-center border border-slate-800/80 hover:border-[#E5C158]/30 active:scale-95 transition-all">
-          <Icons.Phone className="w-4 h-4 fill-[#E5C158] stroke-none" />
+        <button className="w-10 h-10 shrink-0 bg-[#2A1E10] hover:bg-[#3D2D18] border border-[#3D2D18] hover:border-[#D4A843]/40 rounded-xl flex items-center justify-center active:scale-95 transition-all">
+          <Icons.Phone className="w-4 h-4 text-[#D4A843]" />
         </button>
       </div>
 

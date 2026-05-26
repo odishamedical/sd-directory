@@ -236,20 +236,20 @@ export default function DirectoryHome() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#040815] text-[#f8fafc] flex flex-col font-sans overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#100D09] text-[#F0E6D3] flex flex-col font-sans overflow-x-hidden">
       
-      {/* Background Dots Mesh */}
+      {/* Subtle grain texture overlay */}
       <div 
-        className="absolute inset-0 z-0 opacity-10 pointer-events-none" 
+        className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
         style={{ 
-          backgroundImage: 'radial-gradient(circle at 2px 2px, #3a4b7c 1px, transparent 0)', 
-          backgroundSize: '30px 30px' 
+          backgroundImage: 'radial-gradient(circle at 1px 1px, #D4A843 1px, transparent 0)', 
+          backgroundSize: '24px 24px' 
         }}
       />
       
-      {/* Glowing Ambient Ambient Background Filters */}
-      <div className="absolute top-[-10%] left-[10%] w-[500px] h-[500px] bg-blue-600/5 blur-[150px] rounded-full pointer-events-none z-0" />
-      <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-amber-500/5 blur-[180px] rounded-full pointer-events-none z-0" />
+      {/* Warm ambient glows */}
+      <div className="absolute top-[-5%] left-[5%] w-[600px] h-[600px] bg-[#D4A843]/4 blur-[160px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-[40%] right-[-10%] w-[500px] h-[500px] bg-[#8B4513]/5 blur-[180px] rounded-full pointer-events-none z-0" />
 
       {/* 1. Header / Sticky Glass Navigation Hub */}
       <Header />
@@ -258,40 +258,40 @@ export default function DirectoryHome() {
       <section className="relative max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-12 pb-4 z-10">
         <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto mb-6">
           
-          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-white mb-4 font-serif">
+          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-[#F0E6D3] mb-4 font-serif">
             Odisha Local <span className="text-gold-gradient">Business Index</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mb-6 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#8A7A65] max-w-xl mb-6 leading-relaxed">
             Search authentic handlooms, certified jewelry boutiques, healthcare providers, and local services across Odisha clusters.
           </p>
 
           {/* Consolidated Search Input Container */}
-          <div className="w-full max-w-2xl bg-[#0B132B]/90 backdrop-blur-md border border-slate-800 hover:border-[#E5C158]/30 rounded-2xl p-2.5 flex items-center gap-2.5 transition-all duration-300 shadow-xl mb-6">
+          <div className="w-full max-w-2xl bg-[#1A1410] border border-[#2E2016] hover:border-[#D4A843]/40 rounded-2xl p-2.5 flex items-center gap-2.5 transition-all duration-300 shadow-xl mb-6">
             <div className="flex items-center gap-2 flex-1 min-w-0 pl-2">
-              <Icons.Search className="w-4 h-4 text-[#E5C158] shrink-0" />
+              <Icons.Search className="w-4 h-4 text-[#D4A843] shrink-0" />
               <input
                 type="text"
                 placeholder="Search businesses, services, or keywords..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none w-full border-none"
+                className="bg-transparent text-[#F0E6D3] placeholder-[#6B5B45] text-xs sm:text-sm focus:outline-none w-full border-none"
               />
             </div>
             
             <div className="flex items-center gap-2 shrink-0">
               {/* Location Indicator */}
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300">
-                <Icons.MapPin className="w-3.5 h-3.5 text-[#E5C158]" />
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#0D0B08] rounded-xl border border-[#2E2016] text-xs text-[#8A7A65]">
+                <Icons.MapPin className="w-3.5 h-3.5 text-[#D4A843]" />
                 <span className="font-bold text-[11px]">{selectedLocations[0] || "All Odisha"}</span>
               </div>
               
               {/* Mobile Filter Toggle */}
               <button 
                 onClick={() => setIsMobileFilterOpen(true)}
-                className="lg:hidden p-2.5 bg-slate-900/80 border border-slate-800 hover:border-[#E5C158]/20 rounded-xl text-slate-300 hover:text-white transition-all flex items-center justify-center"
+                className="lg:hidden p-2.5 bg-[#0D0B08] border border-[#2E2016] hover:border-[#D4A843]/30 rounded-xl text-[#8A7A65] hover:text-[#F0E6D3] transition-all flex items-center justify-center"
                 title="Filters"
               >
-                <Icons.SlidersHorizontal className="w-4 h-4 text-[#E5C158]" />
+                <Icons.SlidersHorizontal className="w-4 h-4 text-[#D4A843]" />
               </button>
             </div>
           </div>
@@ -302,8 +302,8 @@ export default function DirectoryHome() {
               onClick={() => setSelectedTab("All")}
               className={`px-4 py-2 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 border ${
                 selectedTab === "All"
-                  ? "bg-gradient-to-b from-[#F6D365] to-[#D5A021] text-slate-950 border-transparent shadow-lg shadow-[#E5C158]/10"
-                  : "bg-[#0B132B]/80 hover:bg-[#0B132B] text-slate-300 border-slate-800 hover:border-slate-700"
+                  ? "bg-[#D4A843] text-[#0D0B08] border-transparent shadow-lg shadow-[#D4A843]/20"
+                  : "bg-[#1A1410] hover:bg-[#2A1E10] text-[#8A7A65] hover:text-[#F0E6D3] border-[#2E2016] hover:border-[#D4A843]/30"
               }`}
             >
               All Categories
@@ -314,8 +314,8 @@ export default function DirectoryHome() {
                 onClick={() => setSelectedTab(c.name)}
                 className={`px-4 py-2 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 border ${
                   selectedTab === c.name
-                    ? "bg-gradient-to-b from-[#F6D365] to-[#D5A021] text-slate-950 border-transparent shadow-lg shadow-[#E5C158]/10"
-                    : "bg-[#0B132B]/80 hover:bg-[#0B132B] text-slate-300 border-slate-800 hover:border-slate-700"
+                    ? "bg-[#D4A843] text-[#0D0B08] border-transparent shadow-lg shadow-[#D4A843]/20"
+                    : "bg-[#1A1410] hover:bg-[#2A1E10] text-[#8A7A65] hover:text-[#F0E6D3] border-[#2E2016] hover:border-[#D4A843]/30"
                 }`}
               >
                 {c.name}
@@ -339,25 +339,25 @@ export default function DirectoryHome() {
           )}
 
           {/* Left Sidebar Filter Section / Mobile Drawer */}
-          <aside className={`fixed inset-y-0 left-0 z-50 w-4/5 max-w-sm bg-[#060c18] border-r border-slate-800 p-6 overflow-y-auto transform transition-transform duration-300 lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:bg-transparent lg:border-none lg:p-0 lg:overflow-visible lg:transform-none lg:col-span-3 space-y-6 shadow-2xl lg:shadow-none ${isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+          <aside className={`fixed inset-y-0 left-0 z-50 w-4/5 max-w-sm bg-[#100D09] border-r border-[#2E2016] p-6 overflow-y-auto transform transition-transform duration-300 lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:max-w-none lg:bg-transparent lg:border-none lg:p-0 lg:overflow-visible lg:transform-none lg:col-span-3 space-y-6 shadow-2xl lg:shadow-none ${isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             
-            <div className="flex justify-between items-center lg:hidden mb-4 pb-4 border-b border-slate-800">
-              <span className="text-sm font-bold text-white uppercase tracking-wider">Filters</span>
-              <button onClick={() => setIsMobileFilterOpen(false)} className="text-slate-400 hover:text-white">
+            <div className="flex justify-between items-center lg:hidden mb-4 pb-4 border-b border-[#2E2016]">
+              <span className="text-sm font-bold text-[#F0E6D3] uppercase tracking-wider">Filters</span>
+              <button onClick={() => setIsMobileFilterOpen(false)} className="text-[#8A7A65] hover:text-[#F0E6D3]">
                 <Icons.X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Filter Container Card */}
-            <div className="glass-panel p-5 rounded-2xl space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-slate-800">
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Icons.SlidersHorizontal className="w-3.5 h-3.5 text-[#e5c158]" />
+            <div className="bg-[#1A1410] border border-[#2E2016] p-5 rounded-2xl space-y-6">
+              <div className="flex justify-between items-center pb-4 border-b border-[#2E2016]">
+                <span className="text-xs font-bold text-[#F0E6D3] uppercase tracking-wider flex items-center gap-1.5">
+                  <Icons.SlidersHorizontal className="w-3.5 h-3.5 text-[#D4A843]" />
                   <span>Filters</span>
                 </span>
                 <button 
                   onClick={clearAllFilters}
-                  className="text-[10px] font-bold uppercase tracking-wider text-[#e5c158] hover:underline"
+                  className="text-[10px] font-bold uppercase tracking-wider text-[#D4A843] hover:underline"
                 >
                   Clear All
                 </button>
@@ -365,15 +365,15 @@ export default function DirectoryHome() {
 
               {/* Categories Sidebar Selection */}
               <div className="space-y-3">
-                <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category</h5>
-                <div className="space-y-2 text-xs text-slate-300 max-h-48 overflow-y-auto pr-2">
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-[#8A7A65]">Category</h5>
+                <div className="space-y-2 text-xs text-[#B89A6A] max-h-48 overflow-y-auto pr-2">
                   {taxonomyCategories.map((c) => (
-                    <label key={c.id} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
+                    <label key={c.id} className="flex items-center gap-2.5 cursor-pointer hover:text-[#F0E6D3]">
                       <input 
                         type="checkbox"
                         checked={selectedCategories.includes(c.name)}
                         onChange={() => handleCategoryCheckboxChange(c.name)}
-                        className="rounded bg-slate-900 border-slate-700 text-[#e5c158] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
+                        className="rounded bg-[#0D0B08] border-[#3D2D18] text-[#D4A843] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
                       />
                       <span>{c.name}</span>
                     </label>
@@ -382,16 +382,16 @@ export default function DirectoryHome() {
               </div>
 
               {/* Location Sidebar Selection */}
-              <div className="space-y-3 pt-4 border-t border-slate-800">
-                <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Location</h5>
-                <div className="space-y-2 text-xs text-slate-300 max-h-48 overflow-y-auto pr-2">
+              <div className="space-y-3 pt-4 border-t border-[#2E2016]">
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-[#8A7A65]">Location</h5>
+                <div className="space-y-2 text-xs text-[#B89A6A] max-h-48 overflow-y-auto pr-2">
                   {taxonomyLocations.flatMap(state => state.children).map((d: any) => (
-                    <label key={d.id} className="flex items-center gap-2.5 cursor-pointer hover:text-white">
+                    <label key={d.id} className="flex items-center gap-2.5 cursor-pointer hover:text-[#F0E6D3]">
                       <input 
                         type="checkbox"
                         checked={selectedLocations.includes(d.name)}
                         onChange={() => handleLocationCheckboxChange(d.name)}
-                        className="rounded bg-slate-900 border-slate-700 text-[#e5c158] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
+                        className="rounded bg-[#0D0B08] border-[#3D2D18] text-[#D4A843] focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer"
                       />
                       <span>{d.name}</span>
                     </label>
@@ -401,25 +401,25 @@ export default function DirectoryHome() {
 
               {/* Map Preview integration */}
               <div className="space-y-2 pt-2">
-                <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Map Preview</h5>
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-[#8A7A65]">Map Preview</h5>
                 <MapPreview city={selectedLocations[0] || "Bhubaneswar"} />
               </div>
 
               {/* Star Rating Selectors */}
               <div className="space-y-3 pt-2">
-                <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Minimum Rating</h5>
-                <div className="flex flex-col gap-2 text-xs text-slate-300">
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-[#8A7A65]">Minimum Rating</h5>
+                <div className="flex flex-col gap-2 text-xs text-[#B89A6A]">
                   {[4.9, 4.8, 4.6].map((rate) => (
                     <button 
                       key={rate}
                       onClick={() => setMinRating(minRating === rate ? null : rate)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-left cursor-pointer transition-all ${
                         minRating === rate 
-                          ? "border-[#e5c158] bg-[#e5c158]/5 text-white font-bold" 
-                          : "border-slate-800 bg-slate-950/20 hover:border-slate-700 text-slate-400 hover:text-slate-200"
+                          ? "border-[#D4A843] bg-[#D4A843]/8 text-[#F0E6D3] font-bold" 
+                          : "border-[#2E2016] bg-[#0D0B08]/40 hover:border-[#3D2D18] text-[#8A7A65] hover:text-[#B89A6A]"
                       }`}
                     >
-                      <Icons.Star className={`w-3.5 h-3.5 ${minRating === rate ? "text-[#e5c158] fill-[#e5c158]" : ""}`} />
+                      <Icons.Star className={`w-3.5 h-3.5 ${minRating === rate ? "text-[#D4A843] fill-[#D4A843]" : ""}`} />
                       <span>{rate} Stars & above</span>
                     </button>
                   ))}
@@ -427,7 +427,7 @@ export default function DirectoryHome() {
               </div>
 
               {/* WhatsApp Subscription */}
-              <div className="pt-4 border-t border-slate-800">
+              <div className="pt-4 border-t border-[#2E2016]">
                 <WhatsAppSubscriberBox />
               </div>
 
@@ -440,12 +440,12 @@ export default function DirectoryHome() {
             
             {/* Header info */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 px-2">
-              <p className="text-xs text-slate-400">
-                Showing <strong className="text-white">{filteredListings.length}</strong> local listings in Odisha
+              <p className="text-xs text-[#8A7A65]">
+                Showing <strong className="text-[#F0E6D3]">{filteredListings.length}</strong> local listings in Odisha
               </p>
               <div className="flex items-center gap-2 self-start sm:self-auto">
-                <span className="text-[10px] text-slate-500 uppercase font-bold">Sort by:</span>
-                <select className="bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold uppercase text-[#e5c158] px-2 py-1.5 focus:outline-none">
+                <span className="text-[10px] text-[#6B5B45] uppercase font-bold">Sort by:</span>
+                <select className="bg-[#1A1410] border border-[#2E2016] rounded-lg text-[10px] font-bold uppercase text-[#D4A843] px-2 py-1.5 focus:outline-none">
                   <option>Promoted & Nearby</option>
                   <option>Highest Rated</option>
                   <option>Reviews Count</option>
