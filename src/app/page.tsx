@@ -40,12 +40,16 @@ export default function DirectoryHome() {
   const [ssoMessageVisible, setSsoMessageVisible] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [searchAds, setSearchAds] = useState<any[]>([]);
+  const [mobileNavFilter, setMobileNavFilter] = useState<"all" | "wishlist" | "claimed">("all");
 
   // Load claimed listings from local storage on load
   useEffect(() => {
     const claims = JSON.parse(localStorage.getItem("sd_listing_claims") || "[]");
     const claimedIds = claims.map((c: any) => c.listingId);
     setClaimedListingIds(claimedIds);
+
+    const savedWishlist = JSON.parse(localStorage.getItem("sd_wishlist") || "[]");
+    setWishlist(savedWishlist);
     
     // Fetch Live Data from Firestore
     const fetchListings = async () => {
@@ -114,6 +118,13 @@ export default function DirectoryHome() {
       is_claimed: lst.is_claimed || claimedListingIds.includes(lst.id)
     }));
 
+    // Filter by Mobile Bottom Nav Selection
+    if (mobileNavFilter === "wishlist") {
+      result = result.filter(item => wishlist.includes(item.id));
+    } else if (mobileNavFilter === "claimed") {
+      result = result.filter(item => item.is_claimed);
+    }
+
     // Filter by Top Category Tabs
     if (selectedTab !== "All") {
       result = result.filter(item => item.category === selectedTab);
@@ -157,14 +168,37 @@ export default function DirectoryHome() {
     });
 
     setFilteredListings(result);
-  }, [searchQuery, selectedTab, selectedCategories, selectedLocations, minRating, listings, claimedListingIds]);
+  }, [searchQuery, selectedTab, selectedCategories, selectedLocations, minRating, listings, claimedListingIds, mobileNavFilter, wishlist]);
 
   // Handlers
   const toggleWishlist = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setWishlist(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
+    setWishlist(prev => {
+      const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
+      localStorage.setItem("sd_wishlist", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleSearchClick = () => {
+    // Reset bottom nav filter back to all listings when searching
+    setMobileNavFilter("all");
+    const searchContainer = document.querySelector('input[placeholder*="Search"]');
+    if (searchContainer) {
+      searchContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => {
+        (searchContainer as HTMLInputElement).focus();
+      }, 300);
+    }
+  };
+
+  const handleProfileClick = () => {
+    const email = localStorage.getItem("sd_current_user_email");
+    if (email) {
+      router.push("/dashboard");
+    } else {
+      router.push("/login");
+    }
   };
 
   const handleCategoryCheckboxChange = (cat: string) => {
@@ -456,6 +490,10 @@ export default function DirectoryHome() {
                           distanceOrAddress={lst.distance}
                           image={lst.image}
                           isClaimed={lst.is_claimed}
+                          isVerified={lst.is_verified}
+                          features={lst.features || []}
+                          onWishlistToggle={toggleWishlist}
+                          isWishlisted={isWishlisted}
                         />
                       </div>
                     </React.Fragment>
@@ -505,7 +543,12 @@ export default function DirectoryHome() {
       )}
 
       {/* Mobile Bottom Navigation (Hidden on Desktop) */}
-      <MobileBottomNav />
+      <MobileBottomNav 
+        currentFilter={mobileNavFilter}
+        onTabChange={(tab) => setMobileNavFilter(tab)}
+        onSearchClick={handleSearchClick}
+        onProfileClick={handleProfileClick}
+      />
 
     </div>
   );
