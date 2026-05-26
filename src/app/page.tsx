@@ -11,6 +11,7 @@ import MobileBottomNav from "../components/MobileBottomNav";
 import { Listing } from "../data/listings";
 import EcosystemSwitcher from "../components/EcosystemSwitcher";
 import { db, collection, getDocs, query, orderBy, getDoc, doc } from "../lib/firebase";
+import WhatsAppSubscriberBox from "../components/WhatsAppSubscriberBox";
 
 export default function DirectoryHome() {
   const router = useRouter();
@@ -419,6 +420,11 @@ export default function DirectoryHome() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* WhatsApp Subscription */}
+              <div className="pt-4 border-t border-slate-800">
+                <WhatsAppSubscriberBox />
               </div>
 
             </div>
