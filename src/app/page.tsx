@@ -221,102 +221,72 @@ export default function DirectoryHome() {
       <Header />
 
       {/* 2. Hero search panel */}
-      <section className="relative max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-12 pb-8 z-10">
-        <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto mb-8">
+      <section className="relative max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-12 pb-4 z-10">
+        <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto mb-6">
           
-          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-white mb-6 font-serif">
+          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-white mb-4 font-serif">
             Odisha Local <span className="text-gold-gradient">Business Index</span>
           </h1>
-          <p className="text-sm text-slate-400 max-w-xl mb-8 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mb-6 leading-relaxed">
             Search authentic handlooms, certified jewelry boutiques, healthcare providers, and local services across Odisha clusters.
           </p>
 
-          {/* Search bar */}
-          <div className="w-full max-w-4xl relative mb-10 flex flex-col md:flex-row gap-4 items-center">
-            
-            {/* Desktop / Responsive Unified Search Bar */}
-            <div className="w-full flex items-center bg-[#0A101D] border border-[#E5C158] rounded-2xl p-1.5 shadow-[0_0_15px_rgba(229,193,88,0.15)]">
-              <Icons.Search className="w-5 h-5 text-[#94A3B8] ml-4 md:hidden" />
-              <input 
-                type="text" 
-                placeholder="Find local businesses..."
+          {/* Consolidated Search Input Container */}
+          <div className="w-full max-w-2xl bg-[#0B132B]/90 backdrop-blur-md border border-slate-800 hover:border-[#E5C158]/30 rounded-2xl p-2.5 flex items-center gap-2.5 transition-all duration-300 shadow-xl mb-6">
+            <div className="flex items-center gap-2 flex-1 min-w-0 pl-2">
+              <Icons.Search className="w-4 h-4 text-[#E5C158] shrink-0" />
+              <input
+                type="text"
+                placeholder="Search businesses, services, or keywords..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent border-none text-[#E2E8F0] placeholder-[#64748B] px-4 py-3 focus:outline-none focus:ring-0 text-sm md:text-base"
+                className="bg-transparent text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none w-full border-none"
               />
-              
-              {/* Mobile Right Icons (Filter & Location) hidden on desktop */}
-              <div className="flex items-center gap-3 pr-3 md:hidden border-l border-white/10 pl-3">
-                <Icons.SlidersHorizontal className="w-5 h-5 text-[#94A3B8]" />
-                <Icons.MapPin className="w-5 h-5 text-[#94A3B8]" />
-              </div>
-
-              {/* Desktop Search Button */}
-              <button className="hidden md:flex bg-gradient-to-b from-[#F6D365] to-[#D5A021] w-12 h-12 rounded-xl items-center justify-center shrink-0 shadow-[0_0_15px_rgba(229,193,88,0.2)]">
-                <Icons.Search className="w-5 h-5 text-[#1A1A1A]" />
-              </button>
-
-              {/* Desktop Location Dropdown */}
-              <div className="hidden md:flex items-center gap-2 bg-[#1C2438] border border-[#E5C158]/30 rounded-xl px-2 h-12 ml-2 shrink-0 relative">
-                <Icons.MapPin className="w-4 h-4 text-[#E5C158] ml-2 pointer-events-none" />
-                <select 
-                  value={selectedLocations[0] || ""}
-                  onChange={(e) => setSelectedLocations(e.target.value ? [e.target.value] : [])}
-                  className="bg-transparent border-none text-[#E2E8F0] text-sm focus:outline-none focus:ring-0 cursor-pointer appearance-none pr-8 pl-1 w-[140px]"
-                >
-                  <option value="" className="bg-[#1C2438]">All Odisha</option>
-                  {taxonomyLocations.flatMap((state: any) => state.children || []).map((loc: any) => (
-                    <option key={loc.id} value={loc.name} className="bg-[#1C2438]">
-                      {loc.name}, OD
-                    </option>
-                  ))}
-                </select>
-                <Icons.ChevronDown className="w-4 h-4 text-[#E5C158] absolute right-3 pointer-events-none" />
-              </div>
             </div>
-
+            
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Location Indicator */}
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300">
+                <Icons.MapPin className="w-3.5 h-3.5 text-[#E5C158]" />
+                <span className="font-bold text-[11px]">{selectedLocations[0] || "All Odisha"}</span>
+              </div>
+              
+              {/* Mobile Filter Toggle */}
+              <button 
+                onClick={() => setIsMobileFilterOpen(true)}
+                className="lg:hidden p-2.5 bg-slate-900/80 border border-slate-800 hover:border-[#E5C158]/20 rounded-xl text-slate-300 hover:text-white transition-all flex items-center justify-center"
+                title="Filters"
+              >
+                <Icons.SlidersHorizontal className="w-4 h-4 text-[#E5C158]" />
+              </button>
+            </div>
           </div>
 
-          {/* Categories Tab pills (Desktop) / Glowing Icons (Mobile) */}
-          <div className="w-full">
-            {/* Mobile Categories (Horizontal Scroll) */}
-            <div className="flex md:hidden gap-5 overflow-x-auto no-scrollbar pb-4 px-2 w-[calc(100vw-32px)]">
-               {taxonomyCategories.map((tab) => {
-                 const isActive = selectedTab === tab.name;
-                 return (
-                   <div key={tab.id} onClick={() => setSelectedTab(tab.name)} className="flex flex-col items-center gap-2 cursor-pointer shrink-0">
-                     <div className={`w-[60px] h-[60px] rounded-[16px] flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-gradient-to-b from-[#F6D365] to-[#D5A021] shadow-[0_0_20px_#E5C158] border border-[#E5C158]' : 'bg-gradient-to-b from-[#E5C158]/20 to-transparent border border-[#E5C158]/40 shadow-[0_0_15px_rgba(229,193,88,0.2)]'}`}>
-                       <Icons.Store className={`w-6 h-6 ${isActive ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]'}`} />
-                     </div>
-                     <span className={`text-[12px] font-medium ${isActive ? 'text-white' : 'text-[#94A3B8]'}`}>{tab.name}</span>
-                   </div>
-                 );
-               })}
-            </div>
-
-            {/* Desktop Categories (Pills) */}
-            <div className="hidden md:flex flex-wrap items-center justify-center gap-4">
-              <button 
-                onClick={() => setSelectedTab("All")}
-                className={`px-5 py-2.5 rounded-full border flex items-center gap-2 text-[15px] font-medium transition-all ${selectedTab === "All" ? 'border-[#E5C158] text-[#E5C158] shadow-[0_0_15px_rgba(229,193,88,0.2)]' : 'border-white/10 text-[#E2E8F0] hover:border-[#E5C158]/50 hover:text-white'}`}
+          {/* Category Horizontal Pills Carousel */}
+          <div className="w-full max-w-3xl overflow-x-auto flex items-center gap-2 py-2 px-1 scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <button
+              onClick={() => setSelectedTab("All")}
+              className={`px-4 py-2 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 border ${
+                selectedTab === "All"
+                  ? "bg-gradient-to-b from-[#F6D365] to-[#D5A021] text-slate-950 border-transparent shadow-lg shadow-[#E5C158]/10"
+                  : "bg-[#0B132B]/80 hover:bg-[#0B132B] text-slate-300 border-slate-800 hover:border-slate-700"
+              }`}
+            >
+              All Categories
+            </button>
+            {taxonomyCategories.map((c: any) => (
+              <button
+                key={c.id || c.name}
+                onClick={() => setSelectedTab(c.name)}
+                className={`px-4 py-2 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300 border ${
+                  selectedTab === c.name
+                    ? "bg-gradient-to-b from-[#F6D365] to-[#D5A021] text-slate-950 border-transparent shadow-lg shadow-[#E5C158]/10"
+                    : "bg-[#0B132B]/80 hover:bg-[#0B132B] text-slate-300 border-slate-800 hover:border-slate-700"
+                }`}
               >
-                <Icons.LayoutGrid className="w-4 h-4" />
-                All
+                {c.name}
               </button>
-              {taxonomyCategories.map((tab) => {
-                const isActive = selectedTab === tab.name;
-                return (
-                  <button 
-                    key={tab.id} 
-                    onClick={() => setSelectedTab(tab.name)}
-                    className={`px-5 py-2.5 rounded-full border flex items-center gap-2 text-[15px] font-medium transition-all ${isActive ? 'border-[#E5C158] text-[#E5C158] shadow-[0_0_15px_rgba(229,193,88,0.2)]' : 'border-white/10 text-[#E2E8F0] hover:border-[#E5C158]/50 hover:text-white'}`}
-                  >
-                    <Icons.Tag className="w-4 h-4" />
-                    {tab.name}
-                  </button>
-                )
-              })}
-            </div>
+            ))}
           </div>
 
         </div>
@@ -451,7 +421,7 @@ export default function DirectoryHome() {
 
             {/* Grid List */}
             {filteredListings.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
                 {filteredListings.map((lst, index) => {
                   const isWishlisted = wishlist.includes(lst.id);
                   
@@ -462,7 +432,7 @@ export default function DirectoryHome() {
                   return (
                     <React.Fragment key={lst.id}>
                       {shouldShowAd && (
-                        <div className="md:col-span-2 xl:col-span-3 rounded-2xl overflow-hidden border border-[#e5c158]/30 relative aspect-[6/1] sm:aspect-[8/1] my-4 group shadow-xl">
+                        <div className="col-span-2 md:col-span-2 xl:col-span-3 rounded-2xl overflow-hidden border border-[#e5c158]/30 relative aspect-[6/1] sm:aspect-[8/1] my-4 group shadow-xl">
                           <a href={searchAds[adIndex].linkUrl} target="_blank" rel="noopener noreferrer">
                             <img src={searchAds[adIndex].imageUrl} alt="Advertisement" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
                             <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-bold text-[#e5c158] uppercase tracking-widest border border-[#e5c158]/20">
