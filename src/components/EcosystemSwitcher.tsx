@@ -46,7 +46,22 @@ export default function EcosystemSwitcher() {
   useEffect(() => {
     checkAuth();
     window.addEventListener("sd_auth_change", checkAuth);
-    return () => window.removeEventListener("sd_auth_change", checkAuth);
+
+    // Cross-domain sign-out: clear local auth when another tab signs out
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "sd_current_user_email" && e.newValue === null) {
+        ["sd_current_user_email","sd_current_user_name","sd_current_user_avatar",
+         "sd_current_user_role","sd_current_user_uid","sd_current_user_profile_complete"].forEach(
+          (k) => localStorage.removeItem(k)
+        );
+        setUserEmail(null); setUserName(null); setUserAvatar(null);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("sd_auth_change", checkAuth);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Add styles for the mobile slide-up animation
@@ -88,16 +103,12 @@ export default function EcosystemSwitcher() {
 
   const handleSignOut = () => {
     if (confirm("Are you sure you want to sign out from the SD Ecosystem?")) {
-      localStorage.removeItem("sd_current_user_email");
-      localStorage.removeItem("sd_current_user_name");
-      localStorage.removeItem("sd_current_user_avatar");
-      localStorage.removeItem("sd_current_user_role");
-      localStorage.removeItem("sd_current_user_uid");
-      checkAuth();
-      window.dispatchEvent(new Event("sd_auth_change"));
-      window.location.reload();
+      const authBase = window.location.hostname === "localhost" ? "http://localhost:3000" : "https://sd-auth-center.vercel.app";
+      const returnUrl = encodeURIComponent(window.location.origin + "/");
+      window.location.href = `${authBase}/signout?redirect=${returnUrl}`;
     }
   };
+
 
   const projects = [
     {

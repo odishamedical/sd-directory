@@ -1,18 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import GlobalHeader from "@/components/GlobalHeader";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export const metadata: Metadata = {
   title: "Shyam Dash Directory | Local Odisha Businesses",
@@ -25,14 +16,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-screen bg-[#040815] text-[#f8fafc] flex flex-col font-sans overflow-x-hidden">
+    <html lang="en" className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body
+        className="min-h-screen text-[#E8F4FF] flex flex-col overflow-x-hidden"
+        style={{
+          background: "#030B1A",
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif"
+        }}
+      >
         <AuthProvider>
           <GlobalHeader activeProject="Directory" />
-          {children}
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
+          <ScrollToTop />
         </AuthProvider>
       </body>
     </html>

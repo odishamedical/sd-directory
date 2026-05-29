@@ -26,6 +26,7 @@ export default function AdminDashboard() {
   // Importer State
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [nextPageToken, setNextPageToken] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -295,17 +296,30 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSearchPlaces = async () => {
+  const handleSearchPlaces = async (loadMore = false) => {
     if (!searchQuery) return;
     setIsSearching(true); setErrorMsg(""); setSuccessMsg("");
     try {
       // Auto-append location tags to force Google to return highly localized results
       const fullQuery = [searchQuery, tagArea, tagTown, tagDistrict, tagState, tagPincode].filter(Boolean).join(", ");
-      const res = await fetch(`/api/places?query=${encodeURIComponent(fullQuery)}`, { cache: 'no-store' });
+      let fetchUrl = `/api/places?query=${encodeURIComponent(fullQuery)}`;
+      if (loadMore && nextPageToken) {
+        fetchUrl += `&pageToken=${encodeURIComponent(nextPageToken)}`;
+      }
+
+      const res = await fetch(fetchUrl, { cache: 'no-store' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to search places");
-      setSearchResults(data.results);
-      if (data.results.length === 0) setErrorMsg("No results found on Google Maps.");
+      
+      if (loadMore) {
+        setSearchResults(prev => [...prev, ...data.results]);
+      } else {
+        setSearchResults(data.results);
+      }
+      
+      setNextPageToken(data.nextPageToken || "");
+
+      if (!loadMore && data.results.length === 0) setErrorMsg("No results found on Google Maps.");
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
@@ -545,7 +559,7 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <button 
-                    onClick={handleSearchPlaces}
+                    onClick={() => handleSearchPlaces(false)}
                     disabled={isSearching || !tagCategory}
                     className="px-8 py-4 rounded-xl bg-[#1e293b] text-white font-bold hover:bg-[#2a3a52] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
@@ -571,6 +585,16 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                     </div>
+                    {nextPageToken && (
+                      <button 
+                        onClick={() => handleSearchPlaces(true)}
+                        disabled={isSearching}
+                        className="w-full py-3 mt-2 rounded-xl border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isSearching ? <Icons.Loader2 className="w-4 h-4 animate-spin" /> : <Icons.RefreshCw className="w-4 h-4" />}
+                        {isSearching ? "Loading More..." : "Load Next 20 Results"}
+                      </button>
+                    )}
                     <button 
                       onClick={handleImportAll}
                       disabled={isImporting}

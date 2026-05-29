@@ -3,6 +3,7 @@ import * as Icons from "lucide-react";
 import { db, addDoc, collection, serverTimestamp } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import ProfileBlockerModal from "./ProfileBlockerModal";
+import PaymentSelectionModal from "./PaymentSelectionModal";
 
 interface ClaimModalProps {
   listing: {
@@ -35,7 +36,8 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
       : "Trade License"
   );
   const [docNumber, setDocNumber] = useState("");
-  const [docFile, setDocFile] = useState<string | null>(null);
+  const [docFile, setDocFile] = useState<File | string | null>(null);
+  const [claimId, setClaimId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
     setIsSubmitting(true);
 
     try {
-      await addDoc(collection(db, "claims"), {
+      const docRef = await addDoc(collection(db, "claims"), {
         listingId: listing.id,
         listingName: listing.name,
         category: listing.category,
@@ -88,12 +90,11 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
         docType,
         docNumber,
         submittedAt: serverTimestamp(),
-        status: "Pending Verification",
+        status: "Pending Payment",
         uid: user?.uid || null
       });
 
-      // Trigger success callback
-      onSuccess(listing.id);
+      setClaimId(docRef.id);
       setStep(4);
     } catch (err) {
       console.error("Failed to submit claim:", err);
@@ -119,17 +120,31 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
     return <ProfileBlockerModal onClose={onClose} />;
   }
 
+  if (step === 4 && claimId) {
+    return (
+      <PaymentSelectionModal 
+        listingId={listing.id} 
+        claimId={claimId}
+        onClose={onClose} 
+        onSuccess={() => {
+          setStep(5);
+          onSuccess(listing.id);
+        }} 
+      />
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="w-full max-w-lg glass-panel rounded-3xl overflow-hidden shadow-2xl relative border border-[rgba(229,193,88,0.25)] animate-float">
+      <div className="w-full max-w-lg glass-panel rounded-3xl overflow-hidden shadow-2xl relative border border-[rgba(0,212,255,0.25)] animate-float">
         
         {/* Glowing Ambient Top Bar */}
-        <div className="h-1 bg-gold-gradient w-full" />
+        <div className="h-1 bg-cyan-gradient w-full" />
         
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[#e5c158] block mb-0.5">Verification Wizard</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-cyan-400 block mb-0.5">Verification Wizard</span>
             <h3 className="text-lg font-bold text-white">Claim: {listing.name}</h3>
           </div>
           {step < 4 && (
@@ -146,17 +161,17 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
         {step < 4 && (
           <div className="px-6 py-4 bg-slate-900/60 border-b border-slate-800/40 flex justify-between items-center text-xs text-slate-400">
             <div className="flex gap-4 items-center">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step === 1 ? "bg-gold-gradient text-slate-950" : "bg-slate-800 text-slate-300"}`}>1</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step === 1 ? "bg-cyan-gradient text-slate-950" : "bg-slate-800 text-slate-300"}`}>1</span>
               <span className={step === 1 ? "text-white font-bold" : ""}>Business</span>
             </div>
             <Icons.ChevronRight className="w-4 h-4 text-slate-700" />
             <div className="flex gap-4 items-center">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step === 2 ? "bg-gold-gradient text-slate-950" : "bg-slate-800 text-slate-300"}`}>2</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step === 2 ? "bg-cyan-gradient text-slate-950" : "bg-slate-800 text-slate-300"}`}>2</span>
               <span className={step === 2 ? "text-white font-bold" : ""}>Contact</span>
             </div>
             <Icons.ChevronRight className="w-4 h-4 text-slate-700" />
             <div className="flex gap-4 items-center">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step === 3 ? "bg-gold-gradient text-slate-950" : "bg-slate-800 text-slate-300"}`}>3</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${step === 3 ? "bg-cyan-gradient text-slate-950" : "bg-slate-800 text-slate-300"}`}>3</span>
               <span className={step === 3 ? "text-white font-bold" : ""}>Verify</span>
             </div>
           </div>
@@ -166,7 +181,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
         <div className="p-6">
           {step === 0 && (
             <div className="py-8 text-center flex flex-col items-center justify-center gap-6">
-              <div className="w-16 h-16 bg-[#e5c158]/10 rounded-full flex items-center justify-center text-[#e5c158] border border-[#e5c158]/30">
+              <div className="w-16 h-16 bg-cyan-400/10 rounded-full flex items-center justify-center text-cyan-400 border border-cyan-400/30">
                 <Icons.Lock className="w-8 h-8" />
               </div>
               <div>
@@ -199,7 +214,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Company Listing</label>
                 <div className="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white flex items-center justify-between">
                   <span>{listing.name}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#e5c158] bg-[#e5c158]/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full">
                     {getCategoryLabel(listing.category)}
                   </span>
                 </div>
@@ -218,7 +233,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                   <label className="flex items-center gap-1.5 cursor-pointer group">
                     <input 
                       type="checkbox" 
-                      className="accent-[#e5c158] w-3 h-3 cursor-pointer"
+                      className="accent-cyan-400 w-3 h-3 cursor-pointer"
                       checked={website === "I don't have a website or social media page"}
                       onChange={(e) => {
                         if (e.target.checked) setWebsite("I don't have a website or social media page");
@@ -235,7 +250,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                   value={website === "I don't have a website or social media page" ? "" : website}
                   onChange={(e) => setWebsite(e.target.value)}
                   disabled={website === "I don't have a website or social media page"}
-                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -254,7 +269,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                   placeholder="Mr/Ms. Sahu"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
                 />
               </div>
 
@@ -267,7 +282,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                     placeholder="contact@business.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
+                    className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
                   />
                 </div>
                 <div>
@@ -278,7 +293,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                     placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
+                    className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
                   />
                 </div>
               </div>
@@ -289,7 +304,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                   id="role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white transition-colors"
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white transition-colors"
                 >
                   <option value="Owner">Primary Owner / Director</option>
                   <option value="Manager">Store Manager / Head of Operations</option>
@@ -311,7 +326,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                   id="doc-type"
                   value={docType}
                   onChange={(e) => setDocType(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white transition-colors"
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white transition-colors"
                 >
                   <option value="GSTIN / BIS Certificate">GSTIN Number / BIS Gold Certificate</option>
                   <option value="Weaver ID Card">Primary Weaver Cooperative Society ID Card</option>
@@ -329,20 +344,20 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                   placeholder="e.g. 21AAAAA1111A1Z1 or OMC-55678"
                   value={docNumber}
                   onChange={(e) => setDocNumber(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#e5c158] focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-cyan-400 focus:outline-none rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 transition-colors"
                 />
               </div>
 
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Upload Digital Copy (PDF/JPEG) *</label>
-                <div className="w-full border-2 border-dashed border-slate-800 hover:border-[#e5c158]/50 rounded-2xl p-6 text-center cursor-pointer bg-slate-900/20 transition-all flex flex-col items-center gap-2"
+                <div className="w-full border-2 border-dashed border-slate-800 hover:border-cyan-400/50 rounded-2xl p-6 text-center cursor-pointer bg-slate-900/20 transition-all flex flex-col items-center gap-2"
                   onClick={() => setDocFile("mock_upload_success.pdf")}
                 >
-                  <Icons.UploadCloud className="w-8 h-8 text-[#e5c158]/60" />
+                  <Icons.UploadCloud className="w-8 h-8 text-cyan-400/60" />
                   {docFile ? (
                     <div className="text-xs text-green-400 font-bold flex items-center gap-1">
                       <Icons.CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{docFile} (Ready for submission)</span>
+                      <span>{typeof docFile === 'string' ? docFile : docFile.name} (Ready for submission)</span>
                     </div>
                   ) : (
                     <>
@@ -355,20 +370,20 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
             </div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <div className="py-12 text-center flex flex-col items-center justify-center gap-6">
               <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-400 border border-green-500/30 animate-pulse">
                 <Icons.CheckCircle className="w-8 h-8" />
               </div>
               <div>
-                <h4 className="text-xl font-bold text-white mb-2">Claim Request Filed!</h4>
+                <h4 className="text-xl font-bold text-white mb-2">Claim Request Filed & Payment Received!</h4>
                 <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
-                  Your verification file is submitted. Our moderation board will audit your GSTIN/Weaver ID against registry systems. We will email setup details to <strong className="text-white">{email}</strong> within 24 hours.
+                  Your payment was successful and verification file is submitted. Our moderation board will audit your details. We will email setup details to <strong className="text-white">{email}</strong> within 24 hours.
                 </p>
               </div>
               
-              <div className="w-full bg-[#e5c158]/5 border border-[#e5c158]/20 rounded-2xl p-4 text-left flex items-start gap-3 mt-4">
-                <Icons.ShieldCheck className="w-5 h-5 text-[#e5c158] shrink-0 mt-0.5" />
+              <div className="w-full bg-cyan-400/5 border border-cyan-400/20 rounded-2xl p-4 text-left flex items-start gap-3 mt-4">
+                <Icons.ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-slate-300 leading-relaxed">
                   <strong>SSO Integration Note:</strong> Since central SSO registration is offline, your email/phone has been staged for whitelist clearance. No immediate password is required.
                 </p>
@@ -376,7 +391,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
 
               <button 
                 onClick={onClose}
-                className="px-6 py-3 bg-gold-gradient text-slate-950 font-bold rounded-xl hover:opacity-90 transition-all text-xs uppercase tracking-wider mt-6 w-full"
+                className="px-6 py-3 btn-primary-cyan font-bold rounded-xl hover:opacity-90 transition-all text-xs uppercase tracking-wider mt-6 w-full"
               >
                 Close Verification portal
               </button>
@@ -404,7 +419,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
               <button 
                 type="button" 
                 onClick={handleNext} 
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gold-gradient text-slate-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg hover:shadow-[0_0_15px_rgba(229,193,88,0.2)]"
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl btn-primary-cyan font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg hover:shadow-[0_0_15px_rgba(0,212,255,0.2)]"
               >
                 <span>Continue</span>
                 <Icons.ArrowRight className="w-3.5 h-3.5" />
@@ -414,7 +429,7 @@ export default function ClaimModal({ listing, onClose, onSuccess }: ClaimModalPr
                 type="submit" 
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gold-gradient text-slate-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 shadow-lg hover:shadow-[0_0_15px_rgba(229,193,88,0.2)]"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl btn-primary-cyan font-bold text-xs uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 shadow-lg hover:shadow-[0_0_15px_rgba(0,212,255,0.2)]"
               >
                 {isSubmitting ? (
                   <>

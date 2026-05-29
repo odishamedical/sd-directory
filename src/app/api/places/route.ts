@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query");
+  const pageToken = searchParams.get("pageToken");
 
   if (!query) {
     return NextResponse.json({ error: "Missing query parameter" }, { status: 400 });
@@ -15,16 +16,18 @@ export async function GET(request: Request) {
 
   try {
     const url = `https://places.googleapis.com/v1/places:searchText`;
+    
+    const payload: any = { textQuery: query };
+    if (pageToken) payload.pageToken = pageToken;
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.photos,places.internationalPhoneNumber,places.nationalPhoneNumber"
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.photos,places.internationalPhoneNumber,places.nationalPhoneNumber,nextPageToken"
       },
-      body: JSON.stringify({
-        textQuery: query
-      })
+      body: JSON.stringify(payload)
     });
     
     const data = await response.json();
@@ -81,7 +84,7 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ results });
+    return NextResponse.json({ results, nextPageToken: data.nextPageToken });
   } catch (error: any) {
     console.error("API Route Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -1,27 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  /* === Warm Editorial Dark Theme === */
-  --background: #100D09;          /* Very deep warm charcoal */
-  --background-alt: #15100C;      /* Slightly lifted card bg */
-  --foreground: #F0E6D3;          /* Warm parchment white */
-  --primary-deep: #0D0B08;        /* Near-black warm */
-  --primary-card: #1A1410;        /* Rich dark brown-black */
-  --primary-nav: rgba(16, 13, 9, 0.92);
-  --accent-gold: #D4A843;         /* Premium warm amber-gold */
-  --accent-gold-light: #E8BC55;   /* Lighter hover gold */
-  --accent-glow: rgba(212, 168, 67, 0.22);
-  --border-warm: rgba(212, 168, 67, 0.14);
-  --border-card: rgba(46, 32, 22, 0.8);
-  --text-muted: #8A7A65;          /* Warm stone */
-  --text-secondary: #B89A6A;      /* Warm tawny */
+  /* === Aura Night Blue — Deep Sea Futuristic Theme === */
+  --background: #030B1A;            /* Deep space navy-black */
+  --background-alt: #071428;        /* Slightly lifted, deep sapphire */
+  --foreground: #E8F4FF;            /* Ice white — crystal clear */
+  --primary-deep: #020810;          /* Near-black navy */
+  --primary-card: #071428;          /* Card bg — deep sapphire */
+  --primary-nav: rgba(3, 11, 26, 0.95);
+  --accent-cyan: #00D4FF;           /* ⭐ PRIMARY — Electric Cyan */
+  --accent-blue: #38BDF8;           /* Secondary — Sky Blue */
+  --accent-violet: #818CF8;         /* Tertiary — Aura Violet */
+  --accent-glow: rgba(0, 212, 255, 0.18);
+  --border-card: rgba(0, 212, 255, 0.10);
+  --border-hover: rgba(0, 212, 255, 0.45);
+  --border-subtle: rgba(0, 212, 255, 0.06);
+  --text-muted: #4A7A9B;            /* Muted steel blue */
+  --text-secondary: #7BA3C8;        /* Soft sky label text */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -40,20 +41,20 @@ body {
   background: var(--primary-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2E2016;
+  background: rgba(0, 212, 255, 0.18);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-gold);
+  background: var(--accent-cyan);
 }
 
-/* Glassmorphic Panel */
+/* Glassmorphic Panel — Deep Blue */
 .glass-panel {
-  background: rgba(26, 20, 16, 0.85);
+  background: rgba(7, 20, 40, 0.85);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border-warm);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-card);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 212, 255, 0.04);
 }
 
 .glass-panel-hover {
@@ -61,25 +62,39 @@ body {
 }
 
 .glass-panel-hover:hover {
-  border-color: rgba(212, 168, 67, 0.35);
-  box-shadow: 0 12px 40px 0 rgba(212, 168, 67, 0.1);
+  border-color: var(--border-hover);
+  box-shadow: 0 12px 40px 0 rgba(0, 212, 255, 0.10), 0 0 0 1px rgba(0, 212, 255, 0.15);
   transform: translateY(-2px);
 }
 
-/* Gold Gradients */
-.text-gold-gradient {
-  background: linear-gradient(135deg, #D4A843 0%, #E8BC55 50%, #C89830 100%);
+/* Cyan Gradients */
+.text-cyan-gradient {
+  background: linear-gradient(135deg, #00D4FF 0%, #38BDF8 50%, #818CF8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.bg-gold-gradient {
-  background: linear-gradient(135deg, #D4A843 0%, #E8BC55 100%);
+.bg-cyan-gradient {
+  background: linear-gradient(135deg, #00D4FF 0%, #38BDF8 100%);
 }
 
-.bg-gold-gradient-hover:hover {
-  background: linear-gradient(135deg, #E8BC55 0%, #D4A843 100%);
+.bg-cyan-gradient-hover:hover {
+  background: linear-gradient(135deg, #38BDF8 0%, #00D4FF 100%);
+}
+
+/* CTA Button — Cyan to Blue */
+.btn-primary-cyan {
+  background: linear-gradient(135deg, #00D4FF 0%, #38BDF8 100%);
+  color: #020810;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.35);
+  transition: all 0.3s ease;
+}
+.btn-primary-cyan:hover {
+  background: linear-gradient(135deg, #38BDF8 0%, #00D4FF 100%);
+  box-shadow: 0 6px 30px rgba(0, 212, 255, 0.55);
+  transform: translateY(-1px);
 }
 
 /* Micro-animations */
@@ -93,28 +108,38 @@ body {
   animation: float 5s ease-in-out infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.12; }
-  50% { opacity: 0.30; }
+@keyframes pulse-glow-cyan {
+  0%, 100% { opacity: 0.10; }
+  50% { opacity: 0.28; }
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
+  animation: pulse-glow-cyan 4s ease-in-out infinite;
 }
 
-/* Warm shimmer effect for featured cards */
-@keyframes shimmer {
+/* Aurora shimmer — cyan-violet sweep */
+@keyframes shimmer-aurora {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-.shimmer-gold {
+.shimmer-cyan {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(212, 168, 67, 0.08) 50%,
+    rgba(0, 212, 255, 0.07) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
+  animation: shimmer-aurora 3s ease-in-out infinite;
+}
+
+/* Aurora colour-shift glow for borders */
+@keyframes aurora-border {
+  0%, 100% { border-color: rgba(0, 212, 255, 0.35); }
+  50% { border-color: rgba(129, 140, 248, 0.45); }
+}
+
+.aurora-border-anim {
+  animation: aurora-border 4s ease-in-out infinite;
 }

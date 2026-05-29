@@ -130,7 +130,22 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   useEffect(() => {
     checkAuth();
     window.addEventListener("sd_auth_change", checkAuth);
-    return () => window.removeEventListener("sd_auth_change", checkAuth);
+
+    // Cross-domain sign-out: when another tab/domain removes the auth key, clear ours too
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "sd_current_user_email" && e.newValue === null) {
+        ["sd_current_user_email","sd_current_user_name","sd_current_user_avatar",
+         "sd_current_user_role","sd_current_user_uid","sd_current_user_profile_complete"].forEach(
+          (k) => localStorage.removeItem(k)
+        );
+        setUserEmail(null); setUserName(null); setUserAvatar(null); setUserRole(null);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("sd_auth_change", checkAuth);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   // Close dropdown on outside click
@@ -146,17 +161,12 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
 
   const handleSignOut = () => {
     if (confirm("Are you sure you want to sign out from the SD Ecosystem?")) {
-      localStorage.removeItem("sd_current_user_email");
-      localStorage.removeItem("sd_current_user_name");
-      localStorage.removeItem("sd_current_user_avatar");
-      localStorage.removeItem("sd_current_user_role");
-      localStorage.removeItem("sd_current_user_uid");
-      localStorage.removeItem("sd_current_user_profile_complete");
-      checkAuth();
-      window.dispatchEvent(new Event("sd_auth_change"));
-      window.location.reload();
+      const authBase = window.location.hostname === "localhost" ? "http://localhost:3000" : "https://sd-auth-center.vercel.app";
+      const returnUrl = encodeURIComponent(window.location.origin + "/");
+      window.location.href = `${authBase}/signout?redirect=${returnUrl}`;
     }
   };
+
 
   const projects = [
     { name: "Gold Hub",       shortName: "Gold",   icon: "💛", url: "https://sd-gold-hub.vercel.app",     adminPath: "/admin" },

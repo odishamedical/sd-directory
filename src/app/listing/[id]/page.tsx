@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { db, doc, getDoc, collection, getDocs, addDoc, query, orderBy, serverTimestamp } from "../../../lib/firebase";
+import { db, doc, getDoc, collection, getDocs, addDoc, query, orderBy, serverTimestamp, where, limit } from "../../../lib/firebase";
 import * as Icons from "lucide-react";
 import ClaimModal from "../../../components/ClaimModal";
 import Header from "../../../components/Header";
@@ -24,6 +24,7 @@ export default function ListingPage() {
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [relatedListings, setRelatedListings] = useState<any[]>([]);
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [newReviewText, setNewReviewText] = useState("");
@@ -39,6 +40,12 @@ export default function ListingPage() {
     fetchReviews();
     fetchAds();
   }, [listingId]);
+
+  useEffect(() => {
+    if (listing) {
+      document.title = `${listing.name} in ${listing.village || listing.townOrBlock || listing.district || "Odisha"} | SD Directory`;
+    }
+  }, [listing]);
 
   const fetchAds = async () => {
     try {
@@ -58,7 +65,9 @@ export default function ListingPage() {
       const docRef = doc(db, "listings", listingId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setListing({ id: docSnap.id, ...docSnap.data() });
+        const data = docSnap.data();
+        setListing({ id: docSnap.id, ...data });
+        fetchRelatedListings(data.category, data.district || data.village, docSnap.id);
       } else {
         setError("Listing not found.");
       }
@@ -67,6 +76,25 @@ export default function ListingPage() {
       setError("Failed to load listing.");
     }
     setLoading(false);
+  };
+
+  const fetchRelatedListings = async (category: string, location: string, currentId: string) => {
+    if (!category) return;
+    try {
+      let q = query(
+        collection(db, "listings"),
+        where("category", "==", category),
+        limit(5)
+      );
+      const snapshot = await getDocs(q);
+      let related = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(item => item.id !== currentId);
+        
+      setRelatedListings(related.slice(0, 4));
+    } catch (err) {
+      console.error("Failed to load related listings", err);
+    }
   };
 
   const fetchReviews = async () => {
@@ -123,15 +151,76 @@ export default function ListingPage() {
   const CatIcon = theme.icon;
   const products = listing.products || [];
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": listing.name,
+    "image": listing.image || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1200",
+    "description": listing.description || `Explore ${listing.name} in ${listing.village || listing.townOrBlock || listing.district || "Odisha"}.`,
+    "telephone": listing.phone || "",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": listing.street || listing.area || "",
+      "addressLocality": listing.village || listing.townOrBlock || "",
+      "addressRegion": listing.state || "Odisha",
+      "postalCode": listing.pincode || "",
+      "addressCountry": listing.country || "IN"
+    },
+    "aggregateRating": listing.rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": listing.rating,
+      "reviewCount": listing.reviews_count || 1
+    } : undefined
+  };
+
   return (
     <div className="min-h-screen bg-[#040815] pb-24">
+      {/* Inject JSON-LD Schema for Google SEO */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+
       {/* Global Header */}
       <Header />
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between">
           <button onClick={() => router.push("/")} className="text-slate-400 hover:text-white flex items-center gap-2 transition-colors font-bold text-sm">
             <Icons.ArrowLeft className="w-4 h-4"/> Back to Directory
+          </button>
+        </div>
+        
+        {/* Breadcrumb Trail */}
+        <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-6 text-slate-500 bg-slate-900/50 border border-slate-800 px-4 py-2.5 rounded-lg w-fit">
+          <button onClick={() => router.push("/")} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.country || "India"}</button>
+          <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
+          
+          <button onClick={() => router.push(`/?state=${encodeURIComponent(listing.state || "Odisha")}`)} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.state || "Odisha"}</button>
+          <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
+          
+          {listing.district && (
+            <>
+              <button onClick={() => router.push(`/?state=${encodeURIComponent(listing.state || "Odisha")}&district=${encodeURIComponent(listing.district)}`)} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.district}</button>
+              <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
+            </>
+          )}
+          
+          {(listing.village || listing.townOrBlock) && (
+            <>
+              <button onClick={() => router.push(`/?state=${encodeURIComponent(listing.state || "Odisha")}&district=${encodeURIComponent(listing.district || "")}&village=${encodeURIComponent(listing.village || listing.townOrBlock)}`)} className="hover:text-white cursor-pointer transition-colors text-[#00D4FF]">{listing.village || listing.townOrBlock}</button>
+              <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
+            </>
+          )}
+          
+          <button 
+            onClick={() => {
+              let url = `/?state=${encodeURIComponent(listing.state || "Odisha")}`;
+              if (listing.district) url += `&district=${encodeURIComponent(listing.district)}`;
+              if (listing.village || listing.townOrBlock) url += `&village=${encodeURIComponent(listing.village || listing.townOrBlock)}`;
+              url += `&category=${encodeURIComponent(listing.category)}`;
+              router.push(url);
+            }} 
+            className="hover:text-white cursor-pointer transition-colors text-[#e5c158]"
+          >
+            {theme.label}
           </button>
         </div>
         
@@ -416,6 +505,40 @@ export default function ListingPage() {
           </div>
 
         </div>
+        
+        {/* Related Listings Grid */}
+        {relatedListings.length > 0 && (
+          <div className="mt-16 pt-12 border-t border-slate-800/50">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <Icons.Sparkles className="w-6 h-6 text-[#00D4FF]" /> Similar {listing.category || "Businesses"}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedListings.map(related => (
+                <div 
+                  key={related.id} 
+                  onClick={() => router.push(`/listing/${related.id}`)}
+                  className="bg-[#090F1D] border border-slate-800 hover:border-[#00D4FF]/50 rounded-2xl overflow-hidden cursor-pointer group transition-all hover:-translate-y-1 shadow-lg"
+                >
+                  <div className="h-40 overflow-hidden relative">
+                    <img 
+                      src={related.image || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4"} 
+                      alt={related.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#090F1D] to-transparent"></div>
+                  </div>
+                  <div className="p-5">
+                    <h4 className="font-bold text-white group-hover:text-[#00D4FF] transition-colors line-clamp-1">{related.name}</h4>
+                    <p className="text-xs text-slate-400 mt-2 flex items-center gap-1 line-clamp-1">
+                      <Icons.MapPin className="w-3 h-3 text-[#e5c158]" /> {related.village || related.district || "Odisha"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
       
       {showClaimModal && (

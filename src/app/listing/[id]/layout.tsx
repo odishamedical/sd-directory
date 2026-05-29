@@ -11,38 +11,43 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 
   try {
-    const res = await fetch(`https://firestore.googleapis.com/v1/projects/sd-auth-center/databases/(default)/documents/listings/${id}`, { 
-      next: { revalidate: 60 } 
-    });
+    const { db } = await import("@/lib/firebase");
+    const { doc, getDoc } = await import("firebase/firestore");
     
-    if (res.ok) {
-      const data = await res.json();
+    const docRef = doc(db, "listings", id);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      const data = docSnap.data();
       
-      if (data && data.fields) {
-        const title = data.fields.name?.stringValue || "Shyam Dash Directory";
-        const description = data.fields.description?.stringValue || "Check out this listing on the Shyam Dash Directory.";
-        const image = data.fields.image?.stringValue || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1200";
+      const title = data.name || "Shyam Dash Directory";
+      let description = data.description || "Check out this listing on the Shyam Dash Directory.";
+      
+      if (description.length > 150) {
+          description = description.substring(0, 147) + "...";
+      }
+      
+      const image = data.image || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1200";
 
-        return {
+      return {
+        title: `${title} | SD Directory`,
+        description,
+        openGraph: {
           title,
           description,
-          openGraph: {
-            title,
-            description,
-            images: [{ url: image }],
-            type: "website"
-          },
-          twitter: {
-            card: "summary_large_image",
-            title,
-            description,
-            images: [image]
-          }
-        };
-      }
+          images: [{ url: image }],
+          type: "website"
+        },
+        twitter: {
+          card: "summary_large_image",
+          title,
+          description,
+          images: [image]
+        }
+      };
     }
   } catch (error) {
-    console.error("Failed to generate metadata for listing:", error);
+    console.error("Failed to generate metadata for listing using Firebase SDK:", error);
   }
 
   // Fallback

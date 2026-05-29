@@ -15,7 +15,16 @@ export default function MobileBottomNav({
   onProfileClick,
 }: MobileBottomNavProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0A101D]/95 backdrop-blur-lg border-t border-white/5 pb-safe px-4 pt-2.5 flex justify-between items-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe px-4 pt-2.5 flex justify-between items-center"
+      style={{
+        background: "rgba(3, 11, 26, 0.97)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderTop: "1px solid rgba(0, 212, 255, 0.10)",
+        boxShadow: "0 -10px 40px rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(0,212,255,0.06)"
+      }}
+    >
       
       {/* Home / All Listings */}
       <button 
@@ -23,18 +32,25 @@ export default function MobileBottomNav({
         className="flex flex-col items-center justify-center w-12 h-12 relative cursor-pointer group focus:outline-none"
       >
         {currentFilter === "all" && (
-          <div className="absolute inset-0 bg-[#E5C158] blur-[15px] opacity-25 rounded-full"></div>
+          <div className="absolute inset-0 rounded-full blur-[18px] opacity-30"
+            style={{ background: "#00D4FF" }}
+          />
         )}
-        <Icons.Home className={`w-6 h-6 relative z-10 transition-colors ${currentFilter === "all" ? "text-[#E5C158] fill-[#E5C158]" : "text-[#64748B] group-hover:text-white"}`} />
+        <Icons.Home
+          className={`w-6 h-6 relative z-10 transition-colors ${currentFilter === "all" ? "fill-current" : "text-[#4A7A9B] group-hover:text-white"}`}
+          style={{ color: currentFilter === "all" ? "#00D4FF" : undefined }}
+        />
         {currentFilter === "all" && (
-          <div className="w-1 h-1 bg-[#E5C158] rounded-full absolute bottom-1 shadow-[0_0_10px_#E5C158] z-10"></div>
+          <div className="w-1 h-1 rounded-full absolute bottom-1 z-10"
+            style={{ background: "#00D4FF", boxShadow: "0 0 10px #00D4FF" }}
+          />
         )}
       </button>
 
-      {/* Search (Focus Input & Scroll to Search) */}
+      {/* Search */}
       <button 
         onClick={onSearchClick}
-        className="flex flex-col items-center justify-center w-12 h-12 cursor-pointer text-[#64748B] hover:text-white transition-colors focus:outline-none"
+        className="flex flex-col items-center justify-center w-12 h-12 cursor-pointer transition-colors focus:outline-none text-[#4A7A9B] hover:text-white"
       >
         <Icons.Search className="w-6 h-6" />
       </button>
@@ -42,7 +58,7 @@ export default function MobileBottomNav({
       {/* Profile */}
       <button 
         onClick={onProfileClick}
-        className="flex flex-col items-center justify-center w-12 h-12 cursor-pointer text-[#64748B] hover:text-white transition-colors focus:outline-none"
+        className="flex flex-col items-center justify-center w-12 h-12 cursor-pointer transition-colors focus:outline-none text-[#4A7A9B] hover:text-white"
       >
         <Icons.User className="w-6 h-6" />
       </button>
@@ -53,11 +69,18 @@ export default function MobileBottomNav({
         className="flex flex-col items-center justify-center w-12 h-12 relative cursor-pointer group focus:outline-none"
       >
         {currentFilter === "wishlist" && (
-          <div className="absolute inset-0 bg-[#E5C158] blur-[15px] opacity-25 rounded-full"></div>
+          <div className="absolute inset-0 rounded-full blur-[18px] opacity-30"
+            style={{ background: "#00D4FF" }}
+          />
         )}
-        <Icons.Heart className={`w-6 h-6 relative z-10 transition-colors ${currentFilter === "wishlist" ? "text-[#E5C158] fill-[#E5C158]" : "text-[#64748B] group-hover:text-white"}`} />
+        <Icons.Heart
+          className={`w-6 h-6 relative z-10 transition-colors ${currentFilter === "wishlist" ? "fill-current" : "text-[#4A7A9B] group-hover:text-white"}`}
+          style={{ color: currentFilter === "wishlist" ? "#00D4FF" : undefined }}
+        />
         {currentFilter === "wishlist" && (
-          <div className="w-1 h-1 bg-[#E5C158] rounded-full absolute bottom-1 shadow-[0_0_10px_#E5C158] z-10"></div>
+          <div className="w-1 h-1 rounded-full absolute bottom-1 z-10"
+            style={{ background: "#00D4FF", boxShadow: "0 0 10px #00D4FF" }}
+          />
         )}
       </button>
 
@@ -67,11 +90,18 @@ export default function MobileBottomNav({
         className="flex flex-col items-center justify-center w-12 h-12 relative cursor-pointer group focus:outline-none"
       >
         {currentFilter === "claimed" && (
-          <div className="absolute inset-0 bg-[#E5C158] blur-[15px] opacity-25 rounded-full"></div>
+          <div className="absolute inset-0 rounded-full blur-[18px] opacity-30"
+            style={{ background: "#00D4FF" }}
+          />
         )}
-        <Icons.Bookmark className={`w-6 h-6 relative z-10 transition-colors ${currentFilter === "claimed" ? "text-[#E5C158] fill-[#E5C158]" : "text-[#64748B] group-hover:text-white"}`} />
+        <Icons.Bookmark
+          className={`w-6 h-6 relative z-10 transition-colors ${currentFilter === "claimed" ? "fill-current" : "text-[#4A7A9B] group-hover:text-white"}`}
+          style={{ color: currentFilter === "claimed" ? "#00D4FF" : undefined }}
+        />
         {currentFilter === "claimed" && (
-          <div className="w-1 h-1 bg-[#E5C158] rounded-full absolute bottom-1 shadow-[0_0_10px_#E5C158] z-10"></div>
+          <div className="w-1 h-1 rounded-full absolute bottom-1 z-10"
+            style={{ background: "#00D4FF", boxShadow: "0 0 10px #00D4FF" }}
+          />
         )}
       </button>
 
