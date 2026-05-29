@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, limit } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBz0OIk4xmOZras83es5HmJc03Ae60sMg8",
@@ -164,6 +164,36 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
+
+  // ── UNIVERSAL SIGNOUT LISTENER ─────────────────────────────────────────────
+  // When any SD project signs out, it writes to Firestore "signout_broadcast".
+  // This onSnapshot listener detects that event in real-time and clears THIS
+  // domain's localStorage immediately — achieving true cross-domain signout.
+  const pageLoadTimeRef = useRef(Date.now());
+  useEffect(() => {
+    if (!userEmail) return;
+    const app2 = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    const db2 = getFirestore(app2, "default");
+    const q = query(
+      collection(db2, "signout_broadcast"),
+      where("email", "==", userEmail),
+      orderBy("timestamp", "desc"),
+      limit(1)
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      if (snap.empty) return;
+      const data = snap.docs[0].data();
+      const signoutTs = data.timestamp?.toMillis?.() ?? 0;
+      if (signoutTs > pageLoadTimeRef.current) {
+        // A signout event happened AFTER this page loaded — clear this domain
+        AUTH_KEYS.forEach((k) => localStorage.removeItem(k));
+        sessionStorage.clear();
+        setUserEmail(null); setUserName(null); setUserAvatar(null); setUserRole(null);
+      }
+    }, (err) => console.warn("Signout broadcast listener:", err));
+    return () => unsub();
+  }, [userEmail]);
+  // ─────────────────────────────────────────────────────────────────────────────
 
   // Close dropdown on outside click
   useEffect(() => {
