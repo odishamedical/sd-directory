@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, limit } from "firebase/firestore";
+import { getFirestore, collection, addDoc, onSnapshot, query, where } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBz0OIk4xmOZras83es5HmJc03Ae60sMg8",
@@ -174,23 +174,24 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
     if (!userEmail) return;
     const app2 = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     const db2 = getFirestore(app2, "default");
+    // ── FIX: No orderBy — avoids composite index requirement.
+    // Use docChanges() to skip pre-existing docs and only react to NEW additions.
+    let isInitialLoad = true;
     const q = query(
       collection(db2, "signout_broadcast"),
-      where("email", "==", userEmail),
-      orderBy("timestamp", "desc"),
-      limit(1)
+      where("email", "==", userEmail)
     );
     const unsub = onSnapshot(q, (snap) => {
-      if (snap.empty) return;
-      const data = snap.docs[0].data();
-      const signoutTs = data.timestamp?.toMillis?.() ?? 0;
-      if (signoutTs > pageLoadTimeRef.current) {
-        // A signout event happened AFTER this page loaded — clear this domain
-        AUTH_KEYS.forEach((k) => localStorage.removeItem(k));
-        sessionStorage.clear();
-        setUserEmail(null); setUserName(null); setUserAvatar(null); setUserRole(null);
-      }
-    }, (err) => console.warn("Signout broadcast listener:", err));
+      if (isInitialLoad) { isInitialLoad = false; return; }
+      snap.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          // New signout event — clear THIS domain immediately
+          AUTH_KEYS.forEach((k) => localStorage.removeItem(k));
+          sessionStorage.clear();
+          setUserEmail(null); setUserName(null); setUserAvatar(null); setUserRole(null);
+        }
+      });
+    }, (err) => console.warn("Signout broadcast listener error:", err));
     return () => unsub();
   }, [userEmail]);
   // ─────────────────────────────────────────────────────────────────────────────
