@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { initializeApp, getApps, getApp } from "firebase/app";
@@ -65,10 +65,27 @@ export default function GlobalHeader({ activeProject }: GlobalHeaderProps) {
   const [inviteName, setInviteName] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const AUTH_KEYS = [
+    "sd_current_user_email","sd_current_user_name","sd_current_user_avatar",
+    "sd_current_user_role","sd_current_user_uid","sd_current_user_profile_complete",
+  ];
+
   const checkAuth = () => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      
+
+      // ── SIGNOUT INTERCEPTION ─────────────────────────────────────────────
+      // auth-center /signout redirects back with ?sd_signout=1 after killing Firebase.
+      // localStorage is domain-scoped — we must clear OUR domain storage here.
+      if (params.get("sd_signout") === "1") {
+        AUTH_KEYS.forEach((k) => localStorage.removeItem(k));
+        sessionStorage.clear();
+        setUserEmail(null); setUserName(null); setUserAvatar(null); setUserRole(null);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
       const ssoEmail = params.get("sso_email");
       const ssoName = params.get("sso_name");
       const ssoAvatar = params.get("sso_avatar");
