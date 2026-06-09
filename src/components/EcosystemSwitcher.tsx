@@ -1,68 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EcosystemSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userAvatar, setUserAvatar] = useState<string | null>(null);
-
-  const checkAuth = () => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      
-      // 0. Check for Viral Referral Code
-      const refCode = params.get("ref");
-      if (refCode) {
-        localStorage.setItem("sd_pending_referral", refCode);
-      }
-
-      // 1. Check for incoming SSO tokens in the URL
-      const ssoEmail = params.get("sso_email");
-      const ssoName = params.get("sso_name");
-      const ssoAvatar = params.get("sso_avatar");
-      const ssoRole = params.get("sso_role");
-
-      if (ssoEmail) {
-        // Save new SSO session to this domain's localStorage
-        localStorage.setItem("sd_current_user_email", ssoEmail);
-        if (ssoName) localStorage.setItem("sd_current_user_name", ssoName);
-        if (ssoAvatar) localStorage.setItem("sd_current_user_avatar", ssoAvatar);
-        if (ssoRole) localStorage.setItem("sd_current_user_role", ssoRole);
-        
-        // Clean up the URL to hide the tokens (optional but looks professional)
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-
-      // 2. Load from localStorage
-      setUserEmail(localStorage.getItem("sd_current_user_email"));
-      setUserName(localStorage.getItem("sd_current_user_name"));
-      setUserAvatar(localStorage.getItem("sd_current_user_avatar"));
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-    window.addEventListener("sd_auth_change", checkAuth);
-
-    // Cross-domain sign-out: clear local auth when another tab signs out
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "sd_current_user_email" && e.newValue === null) {
-        ["sd_current_user_email","sd_current_user_name","sd_current_user_avatar",
-         "sd_current_user_role","sd_current_user_uid","sd_current_user_profile_complete"].forEach(
-          (k) => localStorage.removeItem(k)
-        );
-        setUserEmail(null); setUserName(null); setUserAvatar(null);
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("sd_auth_change", checkAuth);
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
+  const { user, loginWithGoogle, logout } = useAuth();
 
   // Add styles for the mobile slide-up animation
   useEffect(() => {
@@ -102,13 +45,10 @@ export default function EcosystemSwitcher() {
   }, [isOpen]);
 
   const handleSignOut = () => {
-    if (confirm("Are you sure you want to sign out from the SD Ecosystem?")) {
-      const authBase = window.location.hostname === "localhost" ? "http://localhost:3000" : "https://sd-auth-center.vercel.app";
-      const returnUrl = encodeURIComponent(window.location.origin + "/");
-      window.location.href = `${authBase}/signout?redirect=${returnUrl}`;
+    if (confirm("Are you sure you want to sign out from the SD Ecosystem on this device?")) {
+      logout();
     }
   };
-
 
   const projects = [
     {
@@ -148,24 +88,8 @@ export default function EcosystemSwitcher() {
     }
   ];
 
-  const getAuthCenterUrl = () => {
-    if (typeof window === "undefined") return "https://sd-auth-center.vercel.app";
-    const refCode = localStorage.getItem("sd_pending_referral");
-    return refCode ? `https://sd-auth-center.vercel.app?ref=${refCode}` : "https://sd-auth-center.vercel.app";
-  };
-
   const getProjectUrl = (baseUrl: string) => {
-    if (!userEmail) return baseUrl;
-    const url = new URL(baseUrl);
-    url.searchParams.set("token", "sso_jump");
-    url.searchParams.set("sso_email", userEmail);
-    if (userName) url.searchParams.set("sso_name", userName);
-    if (userAvatar) url.searchParams.set("sso_avatar", userAvatar);
-    if (typeof window !== "undefined") {
-      const role = localStorage.getItem("sd_current_user_role");
-      if (role) url.searchParams.set("sso_role", role);
-    }
-    return url.toString();
+    return baseUrl; // No passing tokens via URL anymore
   };
 
   return (
@@ -228,19 +152,19 @@ export default function EcosystemSwitcher() {
             </div>
 
             <div className="bg-[#111827]/50 p-4 md:p-3 border-t border-[#2A344A] flex flex-col gap-2 shrink-0 pb-safe">
-              {userEmail ? (
+              {user ? (
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 md:gap-2 overflow-hidden">
-                    {userAvatar ? (
-                      <img src={userAvatar} alt="" className="w-8 h-8 md:w-6 md:h-6 rounded-full object-cover border border-[#C5A059]" />
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt="" className="w-8 h-8 md:w-6 md:h-6 rounded-full object-cover border border-[#C5A059]" />
                     ) : (
                       <div className="w-8 h-8 md:w-6 md:h-6 rounded-full bg-[#C5A059] text-[#0A1021] flex items-center justify-center font-bold text-xs md:text-[10px] shrink-0">
-                        {userName ? userName.charAt(0).toUpperCase() : "U"}
+                        {user.displayName ? user.displayName.charAt(0).toUpperCase() : "U"}
                       </div>
                     )}
                     <div className="overflow-hidden">
-                      <span className="text-xs md:text-[10px] font-bold text-white block truncate leading-none">{userName || userEmail.split("@")[0]}</span>
-                      <span className="text-[10px] md:text-[8px] text-[#C5A059] uppercase tracking-wider block mt-0.5 font-mono truncate">{userEmail}</span>
+                      <span className="text-xs md:text-[10px] font-bold text-white block truncate leading-none">{user.displayName || user.email?.split("@")[0]}</span>
+                      <span className="text-[10px] md:text-[8px] text-[#C5A059] uppercase tracking-wider block mt-0.5 font-mono truncate">{user.email}</span>
                     </div>
                   </div>
                   <button
@@ -251,15 +175,18 @@ export default function EcosystemSwitcher() {
                   </button>
                 </div>
               ) : (
-                <a
-                  href={getAuthCenterUrl()}
-                  className="w-full py-3 md:py-2 bg-gradient-to-r from-[#996515] to-[#C5A059] text-center text-[#0A1021] font-bold text-[11px] md:text-[10px] uppercase tracking-wider rounded-xl md:rounded-lg shadow hover:brightness-110 transition-all flex items-center justify-center gap-1.5"
+                <button
+                  onClick={() => {
+                    loginWithGoogle();
+                    setIsOpen(false);
+                  }}
+                  className="w-full py-3 md:py-2 bg-gradient-to-r from-[#996515] to-[#C5A059] text-center text-[#0A1021] font-bold text-[11px] md:text-[10px] uppercase tracking-wider rounded-xl md:rounded-lg shadow hover:brightness-110 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <svg className="w-4 h-4 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
-                  <span>Universal Sign In (SSO)</span>
-                </a>
+                  <span>Sign In / Register</span>
+                </button>
               )}
             </div>
           </div>
@@ -268,3 +195,4 @@ export default function EcosystemSwitcher() {
     </div>
   );
 }
+

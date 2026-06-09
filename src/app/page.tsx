@@ -469,6 +469,20 @@ export default function DirectoryHome() {
             </button>
           </div>
 
+          {/* Programmatic SEO Quick Links (Crawler Highway) */}
+          <div className="flex flex-wrap justify-center gap-2 max-w-3xl mb-6">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A7A9B] w-full mb-1">Browse by Location</span>
+            {["Odisha", "Bargarh", "Sonepur", "Boudh", "Bhubaneswar", "Sambalpur"].map((loc) => (
+              <a 
+                key={loc}
+                href={`/directory/${loc === "Odisha" ? "Odisha" : `Odisha/${loc}`}`}
+                className="text-xs font-bold text-[#7BA3C8] hover:text-[#00D4FF] border border-[rgba(0,212,255,0.1)] bg-[rgba(0,212,255,0.02)] px-3 py-1.5 rounded-full transition-all hover:bg-[rgba(0,212,255,0.08)]"
+              >
+                {loc}
+              </a>
+            ))}
+          </div>
+
           {/* Category Horizontal Pills Carousel */}
           <div className="w-full max-w-3xl overflow-x-auto flex items-center gap-2 py-2 px-1 scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button

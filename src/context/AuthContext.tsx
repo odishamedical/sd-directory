@@ -40,12 +40,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const loginWithGoogle = async () => {
-    if (typeof window !== "undefined") {
-      const currentUrl = window.location.href;
-      const authCenterBase = window.location.hostname === "localhost" 
-        ? "http://localhost:3000" 
-        : "https://sd-auth-center.vercel.app";
-      window.location.href = `${authCenterBase}?redirect_uri=${encodeURIComponent(currentUrl)}`;
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed:", error);
     }
   };
 
