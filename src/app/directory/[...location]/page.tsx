@@ -86,31 +86,33 @@ export default async function DirectoryLocationPage({ params }: { params: { loca
         </div>
 
         {listings.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {listings.map((lst) => (
-              <DirectoryListingCard 
-                key={lst.id}
-                id={lst.id}
-                name={lst.name}
-                category={lst.category?.toLowerCase() || "vendor"}
-                address={lst.address || `${lst.townOrBlock || ''}, ${lst.district || ''}, ${lst.state || ''}`}
-                isVerified={lst.is_verified || false}
-                imageUrl={lst.image}
-                description={lst.description}
-              />
-            ))}
-          </div>
-          
-          {listings.length >= 30 && (
-            <div className="mt-12 text-center">
-              <Link 
-                href={`/search?state=${encodeURIComponent(state || "")}&district=${encodeURIComponent(district || "")}&block=${encodeURIComponent(block || "")}`} 
-                className="inline-flex px-8 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-[#020810] transition-all bg-gradient-to-r from-[#00D4FF] to-[#38BDF8] shadow-[0_4px_16px_rgba(0,212,255,0.3)] hover:scale-105"
-              >
-                Load More on Interactive Map
-              </Link>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {listings.map((lst) => (
+                <DirectoryListingCard 
+                  key={lst.id}
+                  id={lst.id}
+                  name={lst.name}
+                  category={lst.category?.toLowerCase() || "vendor"}
+                  address={lst.address || `${lst.townOrBlock || ''}, ${lst.district || ''}, ${lst.state || ''}`}
+                  isVerified={lst.is_verified || false}
+                  imageUrl={lst.image}
+                  description={lst.description}
+                />
+              ))}
             </div>
-          )}
+            
+            {listings.length >= 30 && (
+              <div className="mt-12 text-center">
+                <Link 
+                  href={`/search?state=${encodeURIComponent(state || "")}&district=${encodeURIComponent(district || "")}&block=${encodeURIComponent(block || "")}`} 
+                  className="inline-flex px-8 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-[#020810] transition-all bg-gradient-to-r from-[#00D4FF] to-[#38BDF8] shadow-[0_4px_16px_rgba(0,212,255,0.3)] hover:scale-105"
+                >
+                  Load More on Interactive Map
+                </Link>
+              </div>
+            )}
+          </>
         ) : (
           <div className="py-24 text-center rounded-2xl max-w-md mx-auto bg-[#071428] border border-[rgba(0,212,255,0.1)] shadow-2xl">
             <h4 className="text-base font-bold mb-2 text-[#E8F4FF]">No Sellers Found</h4>
