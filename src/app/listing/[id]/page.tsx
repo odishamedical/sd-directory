@@ -7,6 +7,7 @@ import * as Icons from "lucide-react";
 import ClaimModal from "../../../components/ClaimModal";
 import Header from "../../../components/Header";
 import { useAuth } from "@/context/AuthContext";
+import DirectorySidebarFilter from "../../../components/DirectorySidebarFilter";
 
 function getYouTubeId(url: string) {
   if (!url) return null;
@@ -190,29 +191,29 @@ export default function ListingPage() {
         
         {/* Breadcrumb Trail */}
         <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-6 text-slate-500 bg-slate-900/50 border border-slate-800 px-4 py-2.5 rounded-lg w-fit">
-          <button onClick={() => router.push("/")} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.country || "India"}</button>
+          <button onClick={() => router.push("/search")} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.country || "India"}</button>
           <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
           
-          <button onClick={() => router.push(`/?state=${encodeURIComponent(listing.state || "Odisha")}`)} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.state || "Odisha"}</button>
+          <button onClick={() => router.push(`/search?state=${encodeURIComponent(listing.state || "Odisha")}`)} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.state || "Odisha"}</button>
           <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
           
           {listing.district && (
             <>
-              <button onClick={() => router.push(`/?state=${encodeURIComponent(listing.state || "Odisha")}&district=${encodeURIComponent(listing.district)}`)} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.district}</button>
+              <button onClick={() => router.push(`/search?state=${encodeURIComponent(listing.state || "Odisha")}&district=${encodeURIComponent(listing.district)}`)} className="hover:text-white cursor-pointer transition-colors text-slate-400">{listing.district}</button>
               <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
             </>
           )}
           
           {(listing.village || listing.townOrBlock) && (
             <>
-              <button onClick={() => router.push(`/?state=${encodeURIComponent(listing.state || "Odisha")}&district=${encodeURIComponent(listing.district || "")}&village=${encodeURIComponent(listing.village || listing.townOrBlock)}`)} className="hover:text-white cursor-pointer transition-colors text-[#00D4FF]">{listing.village || listing.townOrBlock}</button>
+              <button onClick={() => router.push(`/search?state=${encodeURIComponent(listing.state || "Odisha")}&district=${encodeURIComponent(listing.district || "")}&village=${encodeURIComponent(listing.village || listing.townOrBlock)}`)} className="hover:text-white cursor-pointer transition-colors text-[#00D4FF]">{listing.village || listing.townOrBlock}</button>
               <Icons.ChevronRight className="w-3 h-3 text-slate-600" />
             </>
           )}
           
           <button 
             onClick={() => {
-              let url = `/?state=${encodeURIComponent(listing.state || "Odisha")}`;
+              let url = `/search?state=${encodeURIComponent(listing.state || "Odisha")}`;
               if (listing.district) url += `&district=${encodeURIComponent(listing.district)}`;
               if (listing.village || listing.townOrBlock) url += `&village=${encodeURIComponent(listing.village || listing.townOrBlock)}`;
               url += `&category=${encodeURIComponent(listing.category)}`;
@@ -224,8 +225,15 @@ export default function ListingPage() {
           </button>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           
+          {/* Universal Left Sidebar */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-24 h-[calc(100vh-120px)]">
+              <DirectorySidebarFilter />
+            </div>
+          </div>
+
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-8">
             {/* Header Image */}
@@ -309,21 +317,44 @@ export default function ListingPage() {
                 <h2 className="text-2xl font-bold text-[#e5c158] mb-6 flex items-center gap-2">
                   <Icons.ShoppingBag className="w-6 h-6"/> Products & Services
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {products.map((prod: any, idx: number) => (
-                    <div key={idx} className="border border-slate-800 bg-slate-900/50 rounded-xl p-5 hover:border-[#e5c158]/30 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-bold text-white">{prod.name}</h3>
-                        {prod.price && <span className="bg-[#1e293b] text-[#e5c158] font-mono text-sm px-2 py-1 rounded">{prod.price}</span>}
+
+                {/* B2B Authorization Check */}
+                {(() => {
+                  const isB2B = listing.category?.toLowerCase().includes("b2b") || listing.category?.toLowerCase().includes("wholesale") || listing.category?.toLowerCase().includes("raw");
+                  const userRole = typeof window !== "undefined" ? localStorage.getItem("sd_current_user_role") : null;
+                  const isAuthorized = userRole === "admin" || userRole === "super_admin" || userRole === "retailer" || userRole === "weaver" || userRole === "vendor";
+                  
+                  if (isB2B && !isAuthorized) {
+                    return (
+                      <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-xl">
+                        <Icons.Lock className="w-10 h-10 text-slate-500 mx-auto mb-4" />
+                        <h3 className="text-white font-bold mb-2">B2B Wholesale Catalog</h3>
+                        <p className="text-slate-400 text-sm mb-4">You must be an authorized retailer or vendor to view this supplier's products and pricing.</p>
+                        <button onClick={() => router.push("/launcher?redirect=" + encodeURIComponent(`/listing/${listing.id}`))} className="bg-[#e5c158] text-black font-bold text-sm px-6 py-2.5 rounded-lg hover:bg-yellow-400 transition-colors">
+                          Login as Business
+                        </button>
                       </div>
-                      <p className="text-slate-400 text-sm mb-3">{prod.description}</p>
-                      <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-950 px-2 py-1 rounded-md">
-                        {prod.type === 'service' ? <Icons.Calendar className="w-3 h-3"/> : <Icons.Tag className="w-3 h-3"/>}
-                        {prod.type}
-                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {products.map((prod: any, idx: number) => (
+                        <div key={idx} className="border border-slate-800 bg-slate-900/50 rounded-xl p-5 hover:border-[#e5c158]/30 transition-colors">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-lg font-bold text-white">{prod.name}</h3>
+                            {prod.price && <span className="bg-[#1e293b] text-[#e5c158] font-mono text-sm px-2 py-1 rounded">{prod.price}</span>}
+                          </div>
+                          <p className="text-slate-400 text-sm mb-3">{prod.description}</p>
+                          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-950 px-2 py-1 rounded-md">
+                            {prod.type === 'service' ? <Icons.Calendar className="w-3 h-3"/> : <Icons.Tag className="w-3 h-3"/>}
+                            {prod.type}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
             )}
 

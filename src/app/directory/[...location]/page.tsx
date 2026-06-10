@@ -1,6 +1,6 @@
 import React from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import DirectoryListingCard from "@/components/DirectoryListingCard";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -31,6 +31,8 @@ export default async function DirectoryLocationPage({ params }: { params: { loca
     if (state) q = query(q, where("state", "==", state));
     if (district) q = query(q, where("district", "==", district));
     if (block) q = query(q, where("townOrBlock", "==", block)); // Assuming 'townOrBlock' or 'village'
+    
+    q = query(q, limit(30));
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -98,6 +100,17 @@ export default async function DirectoryLocationPage({ params }: { params: { loca
               />
             ))}
           </div>
+          
+          {listings.length >= 30 && (
+            <div className="mt-12 text-center">
+              <Link 
+                href={`/search?state=${encodeURIComponent(state || "")}&district=${encodeURIComponent(district || "")}&block=${encodeURIComponent(block || "")}`} 
+                className="inline-flex px-8 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-[#020810] transition-all bg-gradient-to-r from-[#00D4FF] to-[#38BDF8] shadow-[0_4px_16px_rgba(0,212,255,0.3)] hover:scale-105"
+              >
+                Load More on Interactive Map
+              </Link>
+            </div>
+          )}
         ) : (
           <div className="py-24 text-center rounded-2xl max-w-md mx-auto bg-[#071428] border border-[rgba(0,212,255,0.1)] shadow-2xl">
             <h4 className="text-base font-bold mb-2 text-[#E8F4FF]">No Sellers Found</h4>
