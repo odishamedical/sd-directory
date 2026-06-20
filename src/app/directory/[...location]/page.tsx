@@ -2,6 +2,7 @@ import React from "react";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import DirectoryListingCard from "@/components/DirectoryListingCard";
+import { PHARMACY_TICKET, HOSPITAL_TICKET, LAB_TICKET, AMBULANCE_TICKET } from "@/lib/ticketConfig";
 import Link from "next/link";
 import Header from "@/components/Header";
 
@@ -88,18 +89,29 @@ export default async function DirectoryLocationPage({ params }: { params: { loca
         {listings.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {listings.map((lst) => (
-                <DirectoryListingCard 
-                  key={lst.id}
-                  id={lst.id}
-                  name={lst.name}
-                  category={lst.category?.toLowerCase() || "vendor"}
-                  address={lst.address || `${lst.townOrBlock || ''}, ${lst.district || ''}, ${lst.state || ''}`}
-                  isVerified={lst.is_verified || false}
-                  imageUrl={lst.image}
-                  description={lst.description}
-                />
-              ))}
+                {listings.map((lst) => {
+                  const cat = lst.category?.toLowerCase() || "vendor";
+                  const configMap: Record<string, any> = {
+                    pharmacy: PHARMACY_TICKET,
+                    hospital: HOSPITAL_TICKET,
+                    lab: LAB_TICKET,
+                    ambulance: AMBULANCE_TICKET,
+                  };
+                  const config = configMap[cat] ?? undefined;
+                  return (
+                    <DirectoryListingCard 
+                      key={lst.id}
+                      id={lst.id}
+                      name={lst.name}
+                      category={cat}
+                      address={lst.address || `${lst.townOrBlock || ''}, ${lst.district || ''}, ${lst.state || ''}`}
+                      isVerified={lst.is_verified || false}
+                      imageUrl={lst.image}
+                      description={lst.description}
+                      config={config}
+                    />
+                  );
+                })}
             </div>
             
             {listings.length >= 30 && (

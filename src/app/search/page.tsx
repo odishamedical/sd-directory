@@ -1,5 +1,6 @@
 "use client";
 
+export const revalidate = 0;
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, collection, getDocs, query, orderBy, limit, startAfter, where } from "../../lib/firebase";

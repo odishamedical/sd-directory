@@ -1,16 +1,34 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
+
+export type TicketConfig = {
+  subtitle?: string;
+  trustMarker?: string;
+  leftMetric?: string;
+  rightMetric?: string;
+  ctaLabel?: string;
+  ctaColor?: "teal" | "red";
+  ctaHref?: string;
+};
 
 interface ListingProps {
   id: string;
   name: string;
-  category: "weaver" | "vendor" | "reseller";
+  category: "weaver" | "vendor" | "reseller" | "pharmacy" | "hospital" | "lab" | "ambulance";
   address: string;
   isVerified: boolean;
   imageUrl?: string;
   description?: string;
+  // New optional config prop
+  config?: TicketConfig;
+  // Raw fields for possible overrides from Firestore
+  subCategory?: string;
+  trustMarker?: string;
+  leftMetric?: string;
+  rightMetric?: string;
+  ctaLabel?: string;
+  ctaColor?: "teal" | "red";
+  ctaHref?: string;
 }
 
 export default function DirectoryListingCard({
@@ -20,15 +38,46 @@ export default function DirectoryListingCard({
   address,
   isVerified,
   imageUrl,
-  description
+  description,
+  config,
+  subCategory,
+  trustMarker,
+  leftMetric,
+  rightMetric,
+  ctaLabel,
+  ctaColor,
+  ctaHref,
 }: ListingProps) {
   const getCategoryLabel = () => {
     switch (category) {
-      case "weaver": return "Master Weaver";
-      case "vendor": return "Verified Vendor";
-      case "reseller": return "Bhulia Reseller";
-      default: return "Seller";
+      case "weaver":
+        return "Master Weaver";
+      case "vendor":
+        return "Verified Vendor";
+      case "reseller":
+        return "Bhulia Reseller";
+      case "pharmacy":
+        return "Pharmacy";
+      case "hospital":
+        return "Hospital";
+      case "lab":
+        return "Diagnostic Lab";
+      case "ambulance":
+        return "Ambulance";
+      default:
+        return "Seller";
     }
+  };
+
+  // Merge config with any overrides coming directly from the listing record
+  const merged = {
+    subtitle: config?.subtitle ?? subCategory,
+    trustMarker: config?.trustMarker ?? trustMarker ?? (isVerified ? "Verified" : undefined),
+    leftMetric: config?.leftMetric ?? leftMetric,
+    rightMetric: config?.rightMetric ?? rightMetric,
+    ctaLabel: config?.ctaLabel ?? ctaLabel,
+    ctaColor: config?.ctaColor ?? ctaColor ?? "teal",
+    ctaHref: config?.ctaHref ?? ctaHref ?? `/${category}/${id}`,
   };
 
   return (
@@ -56,12 +105,29 @@ export default function DirectoryListingCard({
                 </span>
               )}
             </div>
-            <p className="text-xs font-bold text-[#0070F3] uppercase tracking-wider mb-2">{getCategoryLabel()}</p>
+            {/* Subtitle */}
+            {merged.subtitle && (
+              <p className="text-xs font-bold text-[#0070F3] uppercase tracking-wider mb-2">{merged.subtitle}</p>
+            )}
+            {/* Trust Marker */}
+            {merged.trustMarker && (
+              <span className="text-[#C5A059] flex items-center bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200/50 text-[10px] font-bold uppercase tracking-wider shadow-sm mb-2">
+                <span className="mr-1">✓</span> {merged.trustMarker}
+              </span>
+            )}
           </div>
         </div>
 
         <p className="text-sm text-gray-500 line-clamp-2 mb-3">{description || "Traditional Sambalpuri Handloom seller located in Odisha."}</p>
-        
+
+        {/* Bottom metrics */}
+        {(merged.leftMetric || merged.rightMetric) && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mt-auto mb-2">
+            {merged.leftMetric && <span>{merged.leftMetric}</span>}
+            {merged.rightMetric && <span className="ml-auto">{merged.rightMetric}</span>}
+          </div>
+        )}
+
         <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mt-auto">
           <span>📍</span>
           <span>{address}</span>
@@ -70,16 +136,15 @@ export default function DirectoryListingCard({
 
       {/* Action Buttons */}
       <div className="shrink-0 flex flex-col justify-center gap-3 w-full md:w-auto md:border-l border-gray-100 md:pl-5">
-        <Link 
-          href={`/${category}/${id}`} 
-          className="w-full md:w-auto text-center px-6 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-black shadow-sm transition-colors"
+        <Link
+          href={merged.ctaHref}
+          className={`w-full md:w-auto text-center px-6 py-2.5 text-sm font-bold rounded-xl shadow-sm transition-colors ${merged.ctaColor === "red" ? "bg-red-600 text-white hover:bg-red-700" : "bg-teal-600 text-white hover:bg-teal-700"}`}
         >
-          View Profile
+          {merged.ctaLabel ?? "View Profile"}
         </Link>
-        
         {!isVerified && (
-          <a 
-            href="https://hub.bhulia.com/dashboard?verify=true" 
+          <a
+            href="https://hub.bhulia.com/dashboard?verify=true"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full md:w-auto text-center px-6 py-2.5 bg-white border border-[#0070F3] text-[#0070F3] text-sm font-bold rounded-xl hover:bg-blue-50 shadow-sm transition-colors"

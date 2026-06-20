@@ -12,6 +12,22 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  // Sync tab with URL Hash
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "");
+      if (hash && ["dashboard", "importer", "listings", "claims", "taxonomy", "ads", "whatsapp"].includes(hash)) {
+        setActiveTab(hash);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", "#" + activeTab);
+    }
+  }, [activeTab]);
   
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
