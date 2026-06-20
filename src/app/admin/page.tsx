@@ -23,6 +23,12 @@ export default function AdminDashboard() {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [editingListing, setEditingListing] = useState<any | null>(null);
 
+  // WhatsApp States
+  const [waToken, setWaToken] = useState("");
+  const [waPhoneId, setWaPhoneId] = useState("");
+  const [waSessions, setWaSessions] = useState<any[]>([]);
+  const [waSaving, setWaSaving] = useState(false);
+
   // Importer State
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -100,7 +106,60 @@ export default function AdminDashboard() {
     if (activeTab === "listings" || activeTab === "dashboard") fetchListings();
     if (activeTab === "claims" || activeTab === "dashboard") fetchClaims();
     if (activeTab === "importer" || activeTab === "listings") fetchTaxonomy();
+    if (activeTab === "whatsapp") {
+      fetchWhatsAppSettings();
+      fetchWhatsAppSessions();
+    }
   }, [activeTab, isAuthorized]);
+
+  const fetchWhatsAppSettings = async () => {
+    try {
+      const docSnap = await getDoc(doc(db, "system_settings", "whatsapp"));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setWaToken(data.token || "");
+        setWaPhoneId(data.phoneId || "");
+      }
+    } catch (e) {
+      console.error("Failed to load WhatsApp settings", e);
+    }
+  };
+
+  const fetchWhatsAppSessions = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "whatsapp_sessions"));
+      const sessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setWaSessions(sessions.sort((a: any, b: any) => (b.lastInteraction || 0) - (a.lastInteraction || 0)));
+    } catch (e) {
+      console.error("Failed to load WhatsApp sessions", e);
+    }
+  };
+
+  const saveWhatsAppSettings = async () => {
+    setWaSaving(true);
+    try {
+      await setDoc(doc(db, "system_settings", "whatsapp"), {
+        token: waToken,
+        phoneId: waPhoneId,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      alert("WhatsApp API Keys saved successfully!");
+    } catch (e) {
+      console.error("Failed to save keys", e);
+      alert("Failed to save WhatsApp API keys.");
+    }
+    setWaSaving(false);
+  };
+
+  const toggleHumanTakeover = async (sessionId: string, currentState: string) => {
+    try {
+      const newState = currentState === "HUMAN_TAKEOVER" ? "MAIN_MENU" : "HUMAN_TAKEOVER";
+      await setDoc(doc(db, "whatsapp_sessions", sessionId), { state: newState }, { merge: true });
+      fetchWhatsAppSessions();
+    } catch (e) {
+      alert("Failed to toggle mode.");
+    }
+  };
 
   const fetchTaxonomy = async () => {
     try {
@@ -429,6 +488,13 @@ export default function AdminDashboard() {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === "ads" ? "bg-[#e5c158]/10 text-[#e5c158]" : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"}`}
           >
             <Icons.Megaphone className="w-5 h-5" /> Ads & Monetization
+          </button>
+
+          <button 
+            onClick={() => setActiveTab("whatsapp")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === "whatsapp" ? "bg-[#25D366]/10 text-[#25D366]" : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"}`}
+          >
+            <Icons.MessageSquare className="w-5 h-5" /> WhatsApp Manager
           </button>
         </nav>
         
@@ -893,6 +959,136 @@ export default function AdminDashboard() {
 
           {activeTab === "ads" && (
             <AdsManager />
+          )}
+
+          {activeTab === "whatsapp" && (
+            <div className="animate-fadeIn">
+              <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-2">
+                <Icons.MessageSquare className="w-6 h-6 text-[#25D366]" /> WhatsApp Command Center
+              </h2>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column: Settings */}
+                <div className="lg:col-span-1 space-y-6">
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <Icons.Settings className="w-5 h-5 text-[#e5c158]" /> API Configuration
+                    </h3>
+                    <p className="text-xs text-slate-400 mb-6">Update these credentials directly from your Meta Developer Portal. The bot will instantly start using them.</p>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Access Token</label>
+                        <input 
+                          type="password" 
+                          value={waToken} 
+                          onChange={(e) => setWaToken(e.target.value)} 
+                          placeholder="EAAL..." 
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#25D366] outline-none font-mono text-sm" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Phone Number ID</label>
+                        <input 
+                          type="text" 
+                          value={waPhoneId} 
+                          onChange={(e) => setWaPhoneId(e.target.value)} 
+                          placeholder="1234567890" 
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#25D366] outline-none font-mono text-sm" 
+                        />
+                      </div>
+                      <button 
+                        onClick={saveWhatsAppSettings}
+                        disabled={waSaving}
+                        className="w-full py-3 mt-4 rounded-xl bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 font-bold hover:bg-[#25D366]/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {waSaving ? "Saving..." : <><Icons.Save className="w-4 h-4" /> Save API Keys</>}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                      <Icons.BarChart2 className="w-5 h-5 text-blue-400" /> Stats
+                    </h3>
+                    <div className="space-y-3 mt-4">
+                      <div className="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <span className="text-slate-400 text-sm font-bold">Total Sessions</span>
+                        <span className="text-white font-black">{waSessions.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <span className="text-slate-400 text-sm font-bold">Active Humans</span>
+                        <span className="text-[#e5c158] font-black">{waSessions.filter(s => s.state === "HUMAN_TAKEOVER").length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Live Inbox */}
+                <div className="lg:col-span-2">
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-[600px]">
+                    <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center">
+                      <h3 className="font-bold text-white flex items-center gap-2">
+                        <Icons.Inbox className="w-5 h-5 text-[#25D366]" /> Live Session Inbox
+                      </h3>
+                      <button onClick={fetchWhatsAppSessions} className="text-slate-400 hover:text-white p-2">
+                        <Icons.RefreshCw className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                      {waSessions.length === 0 ? (
+                        <div className="h-full flex items-center justify-center text-slate-500 flex-col gap-2">
+                          <Icons.MessageSquare className="w-12 h-12 opacity-20" />
+                          <p>No WhatsApp sessions found.</p>
+                        </div>
+                      ) : (
+                        waSessions.map((session) => (
+                          <div key={session.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4 transition-all hover:border-slate-700">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <h4 className="font-bold text-white text-lg font-mono">{session.id}</h4>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  Last active: {new Date(session.lastInteraction).toLocaleString()}
+                                </p>
+                              </div>
+                              <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
+                                session.state === "HUMAN_TAKEOVER" 
+                                  ? "bg-[#e5c158]/20 text-[#e5c158] border border-[#e5c158]/30" 
+                                  : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                              }`}>
+                                {session.state || "NEW"}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 mt-4 pt-4 border-t border-slate-800/50">
+                              <button 
+                                onClick={() => toggleHumanTakeover(session.id, session.state)}
+                                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${
+                                  session.state === "HUMAN_TAKEOVER"
+                                    ? "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                                    : "bg-[#e5c158]/10 text-[#e5c158] border border-[#e5c158]/20 hover:bg-[#e5c158]/20"
+                                }`}
+                              >
+                                {session.state === "HUMAN_TAKEOVER" ? "Resume Bot Automation" : "Pause Bot (Human Takeover)"}
+                              </button>
+                              <a 
+                                href={`https://wa.me/${session.id.replace('+', '')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-4 py-2 bg-[#25D366] text-black font-bold rounded-lg text-xs flex items-center gap-2 hover:bg-[#20bd5a]"
+                              >
+                                <Icons.ExternalLink className="w-4 h-4" /> Reply in App
+                              </a>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {editingListing && (
