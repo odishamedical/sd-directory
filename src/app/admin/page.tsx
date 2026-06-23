@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimestamp, getDoc, writeBatch, setDoc } from "../../lib/firebase";
 import * as Icons from "lucide-react";
+import { PlusCircle, Search, Edit2, Trash2, Building2, MapPin, Tags, Save, CheckCircle, XCircle } from 'lucide-react';
+import { directoryConfig } from '@/lib/directoryConfig';
+import DynamicAdminForm from '@/components/DynamicAdminForm';
 import TaxonomyManager from "../../components/TaxonomyManager";
 import EditListingModal from "../../components/EditListingModal";
 import AdsManager from "../../components/AdsManager";
@@ -700,40 +703,52 @@ export default function AdminDashboard() {
                     <select name="category" value={formData.category} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none">
                       <option value="jewelry">Jewelry</option>
                       <option value="handlooms">Handlooms</option>
-                      <option value="doctors">Doctors</option>
+                      <option value="doctor">Doctors</option>
+                      <option value="hospital">Hospitals</option>
+                      <option value="pharmacy">Pharmacies</option>
+                      <option value="lab">Diagnostic Labs</option>
+                      <option value="ambulance">Ambulances</option>
                       <option value="it_services">IT Services</option>
                       <option value="retail">Retail</option>
                       <option value="restaurants">Restaurants</option>
                     </select>
                   </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Address / Location</label>
-                    <input type="text" name="address" value={formData.address} onChange={handleChange} required className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" placeholder="e.g., Patia, Bhubaneswar, Odisha" />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Description</label>
-                    <textarea name="description" value={formData.description} onChange={handleChange} required rows={3} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Image URL</label>
-                    <input type="url" name="image" value={formData.image} onChange={handleChange} required className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" placeholder="https://..." />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Phone Number</label>
-                    <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Initial Rating</label>
-                    <input type="number" step="0.1" max="5" name="rating" value={formData.rating} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Reviews Count</label>
-                    <input type="number" name="reviews_count" value={formData.reviews_count} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
-                  </div>
                 </div>
-                <button type="submit" disabled={loading} className="w-full py-4 rounded-xl bg-gradient-to-r from-[#996515] to-[#C5A059] text-black font-black uppercase tracking-widest hover:opacity-90 transition-opacity">
-                  {loading ? "Publishing to Firestore..." : "Publish Live Listing"}
-                </button>
+                {directoryConfig[formData.category] ? (
+                  <DynamicAdminForm category={formData.category} />
+                ) : (
+                  <>
+                    <div className="space-y-2 md:col-span-2 mt-6">
+                      <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Address / Location</label>
+                      <input type="text" name="address" value={formData.address} onChange={handleChange} required className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" placeholder="e.g., Patia, Bhubaneswar, Odisha" />
+                    </div>
+                    <div className="space-y-2 md:col-span-2 mt-6">
+                      <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Description</label>
+                      <textarea name="description" value={formData.description} onChange={handleChange} required rows={3} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Image URL</label>
+                        <input type="url" name="image" value={formData.image} onChange={handleChange} required className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" placeholder="https://..." />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Phone Number</label>
+                        <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Initial Rating</label>
+                        <input type="number" step="0.1" max="5" name="rating" value={formData.rating} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-wider text-slate-400 font-bold">Reviews Count</label>
+                        <input type="number" name="reviews_count" value={formData.reviews_count} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-[#e5c158] outline-none" />
+                      </div>
+                    </div>
+                    <button type="submit" disabled={loading} className="w-full py-4 mt-6 rounded-xl bg-gradient-to-r from-[#996515] to-[#C5A059] text-black font-black uppercase tracking-widest hover:opacity-90 transition-opacity">
+                      {loading ? "Publishing to Firestore..." : "Publish Live Listing"}
+                    </button>
+                  </>
+                )}
               </form>
             </div>
           )}
