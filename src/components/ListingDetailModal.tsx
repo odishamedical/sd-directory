@@ -106,25 +106,25 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="w-full max-w-2xl glass-panel rounded-3xl overflow-hidden shadow-2xl relative border border-[rgba(0,212,255,0.25)] max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div className="w-full max-w-2xl bg-white/95 backdrop-blur-[40px] rounded-3xl overflow-hidden shadow-2xl relative border border-white/60 max-h-[90vh] flex flex-col">
         
         {/* Glowing top line */}
-        <div className="h-1 bg-cyan-gradient w-full shrink-0" />
+        <div className="h-1 bg-gradient-to-r from-teal-500 to-cyan-500 w-full shrink-0" />
         
         {/* Banner/Photo */}
-        <div className="relative h-64 bg-slate-950 w-full shrink-0 overflow-hidden border-b border-slate-800">
+        <div className="relative h-64 bg-slate-50 w-full shrink-0 overflow-hidden border-b border-slate-200">
           <img 
             src={listing.image} 
             alt={listing.name} 
-            className="w-full h-full object-cover opacity-80"
+            className="w-full h-full object-cover opacity-90"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#040815] via-slate-950/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
           
           {/* Close button */}
           <button 
             onClick={onClose} 
-            className="absolute top-4 right-4 bg-slate-950/60 hover:bg-slate-900 text-slate-300 hover:text-white p-2 rounded-xl border border-slate-800 backdrop-blur-md transition-colors"
+            className="absolute top-4 right-4 bg-white/60 hover:bg-white/90 text-slate-700 hover:text-slate-900 p-2 rounded-xl border border-white/80 shadow-sm backdrop-blur-md transition-colors"
           >
             <Icons.X className="w-5 h-5" />
           </button>
@@ -157,8 +157,8 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
             {/* Left Block: Description, Contacts */}
             <div className="md:col-span-7 space-y-6">
               <div>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-2">About The Business</h4>
-                <p className="text-sm text-slate-300 leading-relaxed font-sans">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-2">About The Business</h4>
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
                   {listing.description}
                 </p>
               </div>
@@ -203,19 +203,19 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
               {/* Premium Tier: Products & Services */}
               {(listing as any).products && (listing as any).products.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-3">Products & Services Catalog</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-3">Products & Services Catalog</h4>
                   <div className="grid grid-cols-1 gap-3">
                     {(listing as any).products.map((prod: any) => (
-                      <div key={prod.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex justify-between items-center hover:border-cyan-400/50 transition-colors">
+                      <div key={prod.id} className="bg-white border border-slate-200 shadow-sm hover:shadow-[0_10px_25px_rgba(20,184,166,0.15)] hover:-translate-y-1 rounded-xl p-4 flex justify-between items-center hover:border-teal-400/50 transition-all">
                         <div>
-                          <h5 className="text-sm font-bold text-white mb-1">{prod.name}</h5>
-                          {prod.description && <p className="text-xs text-slate-400 mb-2">{prod.description}</p>}
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full">
+                          <h5 className="text-sm font-bold text-slate-900 mb-1">{prod.name}</h5>
+                          {prod.description && <p className="text-xs text-slate-500 mb-2">{prod.description}</p>}
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
                             {prod.type}
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-black text-white block">{prod.price}</span>
+                          <span className="text-lg font-black text-slate-900 block">{prod.price}</span>
                         </div>
                       </div>
                     ))}
@@ -240,12 +240,12 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
               )}
 
               {/* Address / Distance */}
-              <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-4 flex gap-4 items-start">
-                <Icons.MapPin className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+              <div className="bg-teal-50/50 border border-teal-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm">
+                <Icons.MapPin className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-xs font-bold text-white mb-0.5">Location & Distance</h5>
-                  <p className="text-xs text-slate-300 mb-1">{listing.address}</p>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full">
+                  <h5 className="text-xs font-bold text-slate-900 mb-0.5">Location & Distance</h5>
+                  <p className="text-xs text-slate-600 mb-1">{listing.address}</p>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-2 py-0.5 rounded-full border border-teal-200">
                     📍 {listing.distance} away
                   </span>
                 </div>
@@ -253,15 +253,15 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
             </div>
 
             {/* Right Block: Working hours, contacts details */}
-            <div className="md:col-span-5 space-y-6 border-t md:border-t-0 md:border-l border-slate-800/80 pt-6 md:pt-0 md:pl-6">
+            <div className="md:col-span-5 space-y-6 border-t md:border-t-0 md:border-l border-slate-200 pt-6 md:pt-0 md:pl-6">
               
               {/* Star Rating details */}
-              <div className="bg-cyan-400/5 border border-cyan-400/20 rounded-2xl p-4 flex items-center justify-between">
+              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 flex items-center justify-between">
                 <div>
-                  <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">User Rating</h5>
+                  <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">User Rating</h5>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-2xl font-black text-white">{listing.rating}</span>
-                    <div className="flex items-center text-cyan-400">
+                    <span className="text-2xl font-black text-slate-900">{listing.rating}</span>
+                    <div className="flex items-center text-amber-400">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Icons.Star key={s} className="w-4.5 h-4.5 fill-current" />
                       ))}
@@ -269,19 +269,19 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-300 font-bold block">{listing.reviews_count}</span>
-                  <span className="text-[9px] text-slate-500 block uppercase">Google Reviews</span>
+                  <span className="text-xs text-slate-700 font-bold block">{listing.reviews_count}</span>
+                  <span className="text-[9px] text-slate-400 block uppercase">Google Reviews</span>
                 </div>
               </div>
 
               {/* Operations Hours */}
               <div>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-3">Hours of Operation</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-3">Hours of Operation</h4>
                 <div className="space-y-2 text-xs">
                   {mockHours.map((h, idx) => (
-                    <div key={idx} className="flex justify-between py-1 border-b border-slate-900">
-                      <span className="text-slate-400">{h.day}</span>
-                      <span className="text-white font-semibold">{h.hours}</span>
+                    <div key={idx} className="flex justify-between py-1 border-b border-slate-100">
+                      <span className="text-slate-500">{h.day}</span>
+                      <span className="text-slate-900 font-bold">{h.hours}</span>
                     </div>
                   ))}
                 </div>
@@ -289,33 +289,33 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
 
               {/* Directly Contacts Info */}
               <div className="space-y-3">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Contact Information</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-teal-600">Contact Information</h4>
                 {listing.phone && (
-                  <a href={`tel:${listing.phone}`} className="flex items-center gap-2.5 text-xs text-slate-300 hover:text-cyan-400 transition-colors">
-                    <Icons.Phone className="w-4 h-4 text-slate-500" />
+                  <a href={`tel:${listing.phone}`} className="flex items-center gap-2.5 text-xs text-slate-600 hover:text-teal-600 transition-colors font-medium">
+                    <Icons.Phone className="w-4 h-4 text-slate-400" />
                     <span>{listing.phone}</span>
                   </a>
                 )}
                 {listing.website && (
-                  <a href={listing.website} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 text-xs text-slate-300 hover:text-cyan-400 transition-colors truncate">
-                    <Icons.Globe className="w-4 h-4 text-slate-500 shrink-0" />
+                  <a href={listing.website} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 text-xs text-slate-600 hover:text-teal-600 transition-colors truncate font-medium">
+                    <Icons.Globe className="w-4 h-4 text-slate-400 shrink-0" />
                     <span className="truncate">{listing.website.replace(/^https?:\/\/(www\.)?/, "")}</span>
                   </a>
                 )}
               </div>
 
               {/* User Reviews Section */}
-              <div className="pt-6 mt-6 border-t border-slate-800">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-4">User Reviews</h4>
+              <div className="pt-6 mt-6 border-t border-slate-200">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-4">User Reviews</h4>
                 
                 {/* Review Form */}
-                <form onSubmit={submitReview} className="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6">
-                  <h5 className="text-xs text-white font-bold mb-2">Leave a Review</h5>
+                <form onSubmit={submitReview} className="bg-white border border-slate-200 shadow-sm rounded-xl p-4 mb-6">
+                  <h5 className="text-xs text-slate-900 font-bold mb-2">Leave a Review</h5>
                   <div className="flex items-center gap-1 mb-3">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Icons.Star 
                         key={star} 
-                        className={`w-5 h-5 cursor-pointer transition-colors ${star <= newReviewRating ? "text-cyan-400 fill-current" : "text-slate-700"}`}
+                        className={`w-5 h-5 cursor-pointer transition-colors ${star <= newReviewRating ? "text-amber-400 fill-current" : "text-slate-300"}`}
                         onClick={() => setNewReviewRating(star)}
                       />
                     ))}
@@ -325,9 +325,9 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
                     onChange={(e) => setNewReviewText(e.target.value)}
                     placeholder="Share your experience..." 
                     rows={2} 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-cyan-400 outline-none mb-3"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-900 focus:border-teal-400 focus:ring-4 focus:ring-teal-500/10 outline-none mb-3 transition-all"
                   />
-                  <button type="submit" disabled={submittingReview} className="px-4 py-2 bg-[#1e293b] hover:bg-[#2a3a52] text-white font-bold rounded-lg text-xs transition-colors disabled:opacity-50">
+                  <button type="submit" disabled={submittingReview} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs transition-all shadow-md disabled:opacity-50">
                     {submittingReview ? "Posting..." : "Post Review"}
                   </button>
                 </form>
@@ -338,16 +338,16 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
                     <p className="text-xs text-slate-500 italic">No reviews yet. Be the first!</p>
                   ) : (
                     reviews.map((rev) => (
-                      <div key={rev.id} className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/50">
+                      <div key={rev.id} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                         <div className="flex justify-between items-start mb-1">
-                          <span className="text-xs font-bold text-white">{rev.author}</span>
-                          <div className="flex items-center text-cyan-400">
+                          <span className="text-xs font-bold text-slate-900">{rev.author}</span>
+                          <div className="flex items-center text-amber-400">
                             {[...Array(5)].map((_, i) => (
-                              <Icons.Star key={i} className={`w-3 h-3 ${i < rev.rating ? "fill-current" : "text-slate-700"}`} />
+                              <Icons.Star key={i} className={`w-3 h-3 ${i < rev.rating ? "fill-current" : "text-slate-200"}`} />
                             ))}
                           </div>
                         </div>
-                        <p className="text-xs text-slate-300">{rev.text}</p>
+                        <p className="text-xs text-slate-600">{rev.text}</p>
                       </div>
                     ))
                   )}
@@ -359,12 +359,12 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
         </div>
 
         {/* Modal Action Footer */}
-        <div className="px-6 py-5 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
+        <div className="px-6 py-5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0 rounded-b-3xl">
           
           {/* Claim Status Label */}
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${listing.is_claimed ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+            <div className={`w-3 h-3 rounded-full ${listing.is_claimed ? "bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" : "bg-amber-500"}`} />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
               Listing Status: {listing.is_claimed ? "Claimed & Verified Storefront" : "Unclaimed listing"}
             </span>
           </div>
@@ -384,7 +384,7 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
               <>
                 <button 
                   onClick={onClose} 
-                  className="w-1/2 sm:w-auto px-5 py-3 border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                  className="w-1/2 sm:w-auto px-5 py-3 border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   Close
                 </button>
@@ -393,7 +393,7 @@ export default function ListingDetailModal({ listing, onClose, onClaim }: Listin
                     onClose();
                     onClaim();
                   }}
-                  className="w-1/2 sm:w-auto px-6 py-3 btn-primary-cyan font-bold rounded-xl hover:opacity-90 transition-all text-xs uppercase tracking-wider shadow-lg hover:shadow-[0_0_15px_rgba(0,212,255,0.2)] cursor-pointer"
+                  className="w-1/2 sm:w-auto px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-wider shadow-lg hover:shadow-[0_0_15px_rgba(20,184,166,0.3)] cursor-pointer"
                 >
                   Claim This Listing
                 </button>
