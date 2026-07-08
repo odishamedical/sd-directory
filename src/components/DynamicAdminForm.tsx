@@ -44,7 +44,7 @@ export default function DynamicAdminForm({ category }: { category: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-slate-900/50 border border-slate-800 p-8 rounded-2xl space-y-6">
-      <h3 className="text-xl font-bold text-white font-serif mb-4 text-cyan-400">Dehapa {config.label} Form</h3>
+      <h3 className="text-xl font-black font-serif mb-4 text-cyan-400">Dehapa {(config as any).label} Form</h3>
       
       {config.tabs.map(tab => (
         <div key={tab.id} className="mb-6 p-4 border border-slate-800 rounded-xl bg-slate-950/50">
