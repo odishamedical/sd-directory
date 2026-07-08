@@ -46,7 +46,8 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     youtubeUrl2: listing.youtubeUrl2 || "",
     galleryImage1: listing.galleryImage1 || "",
     galleryImage2: listing.galleryImage2 || "",
-    isTestAccount: listing.isTestAccount || false
+    isTestAccount: listing.isTestAccount || false,
+    launchFee: listing.launchFee || ""
   });
 
   const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
@@ -213,8 +214,16 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
                 <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-cyan-400" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400 font-bold">Phone</label>
+                <label className="text-xs text-slate-400 font-bold">Base Phone (WhatsApp)</label>
                 <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-cyan-400" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 font-bold">Standard Consultation Fee</label>
+                <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange} placeholder="e.g. 800" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-cyan-400" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-emerald-400 font-bold">Launch Offer Fee (Discount)</label>
+                <input type="number" name="launchFee" value={formData.launchFee} onChange={handleChange} placeholder="e.g. 500" className="w-full bg-slate-950 border border-emerald-500/50 rounded-lg p-2.5 text-white text-sm outline-none focus:border-emerald-400" />
               </div>
               <div className="space-y-1 md:col-span-2">
                 <div className="flex justify-between items-center mb-1">
