@@ -47,7 +47,8 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     galleryImage1: listing.galleryImage1 || "",
     galleryImage2: listing.galleryImage2 || "",
     isTestAccount: listing.isTestAccount || false,
-    launchFee: listing.launchFee || ""
+    launchFee: listing.launchFee || "",
+    consultationFee: listing.consultationFee || ""
   });
 
   const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
