@@ -45,7 +45,8 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
     youtubeUrl: listing.youtubeUrl || "",
     youtubeUrl2: listing.youtubeUrl2 || "",
     galleryImage1: listing.galleryImage1 || "",
-    galleryImage2: listing.galleryImage2 || ""
+    galleryImage2: listing.galleryImage2 || "",
+    isTestAccount: listing.isTestAccount || false
   });
 
   const [taxonomyCategories, setTaxonomyCategories] = useState<any[]>([]);
@@ -252,6 +253,19 @@ export default function EditListingModal({ listing, onClose, onRefresh }: EditLi
               <div className="space-y-1 md:col-span-2">
                 <label className="text-xs text-slate-400 font-bold">Full Address (Legacy)</label>
                 <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm outline-none focus:border-cyan-400" />
+              </div>
+              <div className="space-y-1 md:col-span-2 bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-lg flex items-center justify-between">
+                <div>
+                  <label className="text-sm text-indigo-300 font-bold">Test Account Status</label>
+                  <p className="text-[10px] text-indigo-400 mt-0.5">If enabled, bookings for this profile will display a 'Bypass Payment' button.</p>
+                </div>
+                <input 
+                  type="checkbox" 
+                  name="isTestAccount" 
+                  checked={formData.isTestAccount} 
+                  onChange={(e) => setFormData(prev => ({ ...prev, isTestAccount: e.target.checked }))} 
+                  className="w-5 h-5 rounded border-indigo-500/50 bg-slate-900 text-indigo-500 focus:ring-indigo-500 cursor-pointer"
+                />
               </div>
               <div className="space-y-1 md:col-span-2">
                 <label className="text-xs text-slate-400 font-bold">Primary Listing Image (16:9)</label>
