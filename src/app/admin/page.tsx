@@ -258,6 +258,36 @@ export default function AdminDashboard() {
     setIsLoadingData(false);
   };
 
+  const handleSendWhatsAppInvite = async (lst: any) => {
+    if (!lst.phone) {
+      alert("This listing has no phone number.");
+      return;
+    }
+    if (!confirm(`Send WhatsApp Invite to ${lst.name} at ${lst.phone}?`)) return;
+    
+    try {
+      // First attempt to call the Dehapa Hub API since that handles the outreach natively
+      // In a real production setup, we would use an internal API call or a shared service
+      // For now, we call the Dehapa Hub API directly. We use a relative path if they are on same domain, 
+      // but they are different domains, so we call the new API route we're about to add to sd-directory.
+      const res = await fetch('/api/outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: lst.phone, businessName: lst.name })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send");
+      
+      alert("Invite sent successfully!");
+      
+      // Update listing visually
+      await updateDoc(doc(db, "listings", lst.id), { invite_sent: true });
+      fetchListings();
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
+  };
+
   const fetchClaims = async () => {
     setIsLoadingData(true);
     try {
@@ -895,6 +925,16 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex justify-end gap-2">
+                                {!lst.is_claimed && lst.phone && !lst.invite_sent && (
+                                  <button onClick={() => handleSendWhatsAppInvite(lst)} className="text-[#25D366] hover:text-[#25D366]/80 hover:bg-[#25D366]/10 p-2 rounded-lg transition-colors" title="Send WhatsApp Invite">
+                                    <Icons.Send className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {!lst.is_claimed && lst.phone && lst.invite_sent && (
+                                  <span className="text-[#25D366] p-2 flex items-center" title="Invite Sent">
+                                    <Icons.CheckCircle className="w-4 h-4" />
+                                  </span>
+                                )}
                                 <button onClick={() => handleToggleFeatured(lst.id, lst.is_featured)} className={`${lst.is_featured ? 'text-[#e5c158] bg-[#e5c158]/10' : 'text-slate-400 hover:text-[#e5c158] hover:bg-[#e5c158]/10'} p-2 rounded-lg transition-colors`} title={lst.is_featured ? "Remove Featured Status" : "Mark as Featured"}>
                                   <Icons.Star className={`w-4 h-4 ${lst.is_featured ? 'fill-current' : ''}`} />
                                 </button>

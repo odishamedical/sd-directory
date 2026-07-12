@@ -101,7 +101,7 @@ export default function DynamicAdminForm({ category }: { category: string }) {
       ))}
       
       <button type="submit" disabled={loading} className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black uppercase tracking-widest hover:opacity-90 transition-opacity shadow-lg shadow-cyan-500/20">
-        {loading ? "Publishing..." : `Publish ${config.label} to Directory`}
+        {loading ? "Publishing..." : `Publish ${(config as any).label} to Directory`}
       </button>
     </form>
   );
